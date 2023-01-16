@@ -7,6 +7,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const fs = require('fs')
 const path = require('path')
+const AWS = require("aws-sdk")
 
 var spawn = require('child_process').spawn
 const makePngs = require('./PngUtils.js').makePngs
@@ -19,6 +20,28 @@ const { clientOrigins, serverPort } = require("./config/env.dev");
 // const { messagesRouter } = require("./messages/messages.router");
 
 const { checkJwt } = require("./authz/check-jwt");
+AWS.config.update({region:'eu-central-1'});
+
+// AWS.config.getCredentials(function(err) {
+//   if (err) console.log(err.stack);
+//   // credentials not loaded
+//   else {
+//     console.log("Access key:", AWS.config.credentials.accessKeyId);
+//     const ec2instance = new AWS.EC2InstanceConnect()
+//     var params = {
+//       InstanceId: 'i-06e04e453f162d248', /* required */
+//       InstanceOSUser: 'ec2-user', /* required */
+//       SSHPublicKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCz43NHKF3k70uiHdjxpXY7EBeZ06a/Vuj3vzrsJCxuondlgd5SMzCesJNPLXpIa1zRObvLXZucS7oERLGSqCzhcLC/ZLeHN9shVPtFwkbPYGJPFtklMveV7GbGT1ofyGns5ghT9f/4bL5prdLVZOr4FOXrOoWHfzYm6IIkRiOI5UcIoNrA4mXH+8SgpO6QbuR5Xsg8uFiHosA1X0PB9hz0JbZeWWUm5LPJzhLAP6S8gVf+TY0syif3qrgu+hzK8Psc8CfVdeVyy0IdrIzibocmGwlkz/BAuK6gIxfY99w1pfsbLusvHoSMuzVvAHvvn+danQqs4vnRL/4f+H7FMHvZ', /* required */
+//       // AvailabilityZone: 'eu-central-1'
+//     };
+//     ec2instance.sendSSHPublicKey(params, function (err, data) {
+//       if (err) {console.log(err, err.stack)} // an error occurred
+//       else     {console.log("data");console.log(data);console.log("data")};           // successful response
+//     });
+
+//   }
+
+// });
 
 
 /**
@@ -85,9 +108,12 @@ app.post('/saveAnimation',checkJwt,(request, response)=>{
   console.log(data_str)
 
   var name = data_str["name"]
+  console.log(name)
 
   if (!fs.existsSync(username)){
     fs.mkdirSync(username)
+    console.log(username)
+
   }
   var animation_path = `${username}/animations`
   if (!fs.existsSync(animation_path)){
