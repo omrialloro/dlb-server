@@ -11,7 +11,7 @@ const path = require('path')
 var spawn = require('child_process').spawn
 const makePngs = require('./PngUtils.js').makePngs
 const makeThumbnail = require('./PngUtils.js').makeThumbnail
-
+const fff= "@#@3";
 
 
 const { clientOrigins, serverPort } = require("./config/env.dev");
