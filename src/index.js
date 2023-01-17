@@ -12,6 +12,7 @@ const AWS = require("aws-sdk")
 var spawn = require('child_process').spawn
 const makePngs = require('./PngUtils.js').makePngs
 const makeThumbnail = require('./PngUtils.js').makeThumbnail
+const xx = 1;
 
 
 
