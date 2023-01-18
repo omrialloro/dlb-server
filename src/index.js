@@ -87,6 +87,11 @@ app.listen(serverPort, () => {
   console.log(`API Server listening on port ${serverPort}`);
 });
 
+app.get('/check',function (req,res){
+  console.log("running")
+  res.send("ok")
+}
+)
 app.get('/animationsList/:username',function (req, res) {
   console.log(req);
   let json_files_list = [];
