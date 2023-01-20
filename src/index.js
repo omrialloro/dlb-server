@@ -3,6 +3,8 @@
  */
 
 const express = require("express");
+const router = express.Router();
+
 const cors = require("cors");
 const helmet = require("helmet");
 const fs = require('fs')
@@ -12,7 +14,6 @@ const AWS = require("aws-sdk")
 var spawn = require('child_process').spawn
 const makePngs = require('./PngUtils.js').makePngs
 const makeThumbnail = require('./PngUtils.js').makeThumbnail
-const xx = 1;
 
 
 
@@ -22,6 +23,13 @@ const { clientOrigins, serverPort } = require("./config/env.dev");
 
 const { checkJwt } = require("./authz/check-jwt");
 AWS.config.update({region:'eu-central-1'});
+
+// const dynamodb = new AWS.DynamoDB.DocumentClient();
+var dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+
+// const dynamodbTableName = 'dlb';
+const dynamodbTableName = 'animations';
+
 
 // AWS.config.getCredentials(function(err) {
 //   if (err) console.log(err.stack);
@@ -62,9 +70,7 @@ app.use(function(req, res, next) {
 
 app.use(express.json({limit: '25mb'}));
 
-/**
- *  App Configuration
- */
+
 
 app.use(helmet());
 app.use(cors({ origin: clientOrigins }));
@@ -79,9 +85,63 @@ app.use(function (err, req, res, next) {
   res.status(500).send(err.message);
 });
 
-/**
- * Server Activation
- */
+
+
+
+
+
+// router.post('/', async (req, res) => {
+
+const fff = async ()=>{
+
+
+  var params = {
+    TableName: dynamodbTableName,
+    Item: {
+      'animationId' : {S: 'xxfffx'},
+      'CUSTOMER_NAME' : {S: 'Richffard Roe'}
+    }
+  };
+  
+  // Call DynamoDB to add the item to the table
+  dynamodb.putItem(params, function(err, data) {
+    if (err) {
+      console.log("Error", err);
+    } else {
+      console.log("Success", data);
+    }
+  });
+  // const params = {
+  //   TableName: dynamodbTableName,
+  //   // Item: req.body
+  //   Item: {"animationId":"000"}
+    
+  // }
+  // await dynamodb.put(params).promise().then(() => {
+  //   const body = {
+  //     Operation: 'SAVE',
+  //     Message: 'SUCCESS',
+  //     // Item: req.body
+  //     Item: {"animationId":"000"}
+
+  //   }
+  //   // res.json(body);
+  // }, error => {
+  //   console.error('Do your custom error handling here. I am just ganna log it out: ', error);
+  //   // res.status(500).send(error);
+  // })
+
+}
+  
+// })
+
+fff()
+
+
+
+
+
+
 
 app.listen(serverPort, () => {
   console.log(`API Server listening on port ${serverPort}`);
