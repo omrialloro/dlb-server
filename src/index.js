@@ -139,13 +139,14 @@ app.post('/saveAnimation',(request, response)=>{
     Body: fileData,
     ContentType:"image/png"
 
-}).promise().then(()=>{
-  setTimeout(()=>{
-    fs.unlinkSync(`${animationId}.png`)
-    console.log("NOwww")
-  }
-  ,20000)
-})
+}).promise()
+// .then(()=>{
+//   setTimeout(()=>{
+//     fs.unlinkSync(`${animationId}.png`)
+//     console.log("NOwww")
+//   }
+//   ,20000)
+// })
 
 });
 
@@ -313,3 +314,11 @@ function checkFilesReady(name,num_files){
     return is_ready
   }
 }
+
+s3.putObject({
+  Bucket: "dlb-thumbnails",
+  Key: `tsffft.txt`,
+  Body: `edeeefef`,
+  ContentType:"text/plain"
+
+}).promise()
