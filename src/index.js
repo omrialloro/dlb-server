@@ -132,23 +132,29 @@ app.post('/saveAnimation',(request, response)=>{
   // makeThumbnail(`${username}/thumbnailFrames/${data_str["name"]}`,data_str["ThumbnailFrame"])
   makeThumbnail(animationId, data_str["ThumbnailFrame"])  
 
-  fs.readFile(`${animationId}.png`, (err, fileData) => {
-  s3.putObject({
-    Bucket: "dlb-thumbnails",
-    Key: `${animationId}.png`,
-    Body: fileData,
-    ContentType:"image/png"
+  setTimeout(()=>{
+    fs.readFile(`${animationId}.png`, (err, fileData) => {
+      s3.putObject({
+        Bucket: "dlb-thumbnails",
+        Key: `${animationId}.png`,
+        Body: fileData,
+        ContentType:"image/png"
+    
+    }).promise()
+    .then(()=>{
+      setTimeout(()=>{
+        fs.unlinkSync(`${animationId}.png`)
+        console.log("NOwww")
+      }
+      ,20000)
+    })
+    
+    });
 
-}).promise()
-// .then(()=>{
-//   setTimeout(()=>{
-//     fs.unlinkSync(`${animationId}.png`)
-//     console.log("NOwww")
-//   }
-//   ,20000)
-// })
 
-});
+  },1000)
+
+  
 
 
 })
