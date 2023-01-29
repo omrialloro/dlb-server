@@ -59,9 +59,6 @@ function makeFrame(pathName,frame,margin,brick_dim,num_rows,num_cols){
 
     let w = num_rows*(brick_dim[1]+margin)+margin
     let h = num_cols*(brick_dim[0]+margin)+margin
-    console.log(w)
-    console.log(h)
-
 
     var png = new PNG({
         width: w,
@@ -78,7 +75,6 @@ function makeFrame(pathName,frame,margin,brick_dim,num_rows,num_cols){
             png.data[idx+3] = 0; // alpha (0 is transparent)
         }
     }
-    console.log(frame)
 
 
     for (let r = 0; r < num_rows; r++) {

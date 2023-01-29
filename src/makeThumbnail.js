@@ -72,7 +72,6 @@ function PrepareThumbnails(folder_in, folder_out){
   const files_list_json = files_list.filter(file => {
     return path.extname(file).toLowerCase() === ".json";
   });
-  console.log(files_list_json)
 
 
   files_list_json.forEach((filename, i) => {

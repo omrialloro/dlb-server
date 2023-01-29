@@ -5,8 +5,7 @@ const os = require('os')
 const path = require('path')
 const fs = require('fs')
 const PNG = require('pngjs').PNG;
-//
-//
+
 // let json_files_list = [];
 // files = fs.readdirSync("extracted_gifs")
 // files.forEach(file => {
@@ -50,9 +49,6 @@ const PNG = require('pngjs').PNG;
 //
 
 
-
-
-
 function makePngs(name,speed, frames){
 
 let margin = 0;
@@ -65,7 +61,6 @@ let w = num_rows*(brick_dim[1]+margin)+margin
 let h = num_cols*(brick_dim[0]+margin)+margin
 
 fs.mkdirSync(name)
-
 
 for (let i = 0;i<frames.length;i++){
   console.log("frame"+i)
@@ -126,7 +121,6 @@ function hexToRgb(hex) {
       var r= parseInt(result[1], 16);
       var g= parseInt(result[2], 16);
       var b= parseInt(result[3], 16);
-
       return [r,g,b,240]
   }
   return null;
