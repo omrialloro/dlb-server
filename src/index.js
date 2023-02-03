@@ -39,10 +39,10 @@ const s3 = new AWS.S3()
 
 const app = express();
 const apiRouter = express.Router();
-// var options = {
-//   key: fs.readFileSync('private.key'),
-//   cert: fs.readFileSync('certificate.crt'),
-// };
+var options = {
+  key: fs.readFileSync('private.key'),
+  cert: fs.readFileSync('certificate.crt'),
+};
 
 
 
@@ -68,13 +68,13 @@ app.use(function (err, req, res, next) {
   res.status(500).send(err.message);
 });
 
-app.listen(serverPort, () => {
-  console.log(`API Server listening on port ${serverPort}`);
-});
-
-// var server = https.createServer(options, app).listen(serverPort, function(){
-//   console.log("Express server listening on port " + serverPort);
+// app.listen(serverPort, () => {
+//   console.log(`API Server listening on port ${serverPort}`);
 // });
+
+var server = https.createServer(options, app).listen(serverPort, function(){
+  console.log("Express server listening on port " + serverPort);
+});
 
 app.get('/check',function (req,res){
   console.log("running")
