@@ -81,21 +81,38 @@ app.get('/check',function (req,res){
 )
 
 
-app.get('/animationsList/:username',function (req, res) {
+app.get('/animationsList/:username/:flag',function (req, res) {
   const username = req.params.username
-  var params = {
-    IndexName: "userID-index",
-
-    ExpressionAttributeValues: {
-      ':u': {S: username},
-      ':d': {BOOL: false},
-      ':t': {S: "row"}
-    },
-    KeyConditionExpression: 'userID = :u',
-    ProjectionExpression: 'animationId,animationName',
-    FilterExpression: 'isDeleted = :d and formatType=:t',
-    TableName: dynamodbTableName
-  };
+  const flag = req.params.flag
+  if(flag=="row"){
+    var params = {
+      IndexName: "userID-index",
+  
+      ExpressionAttributeValues: {
+        ':u': {S: username},
+        ':d': {BOOL: false},
+        ':t': {S: "row"}
+      },
+      KeyConditionExpression: 'userID = :u',
+      ProjectionExpression: 'animationId,animationName',
+      FilterExpression: 'isDeleted = :d and formatType=:t',
+      TableName: dynamodbTableName
+    };
+  }
+  else {
+    var params = {
+      IndexName: "userID-index",
+  
+      ExpressionAttributeValues: {
+        ':u': {S: username},
+        ':d': {BOOL: false},
+      },
+      KeyConditionExpression: 'userID = :u',
+      ProjectionExpression: 'animationId,animationName',
+      FilterExpression: 'isDeleted = :d',
+      TableName: dynamodbTableName
+    };
+  }
   var dddd = []
     dynamodb.query(params, function(err, data) {
     if (err) {
@@ -119,7 +136,9 @@ app.post('/saveAnimation',(request, response)=>{
   var formatType = data_str["formatType"]
   var name = data_str["name"]
   var frames = JSON.stringify(data_str["data"])
+
   var animationId = String(Date.now())
+  console.log(animationId)
   var params = {
     TableName: dynamodbTableName,
     Item: {
@@ -127,18 +146,26 @@ app.post('/saveAnimation',(request, response)=>{
       'userName':{S: userID},
       'userID' : {S: userID},
       'animationId':{S: animationId},
-      'frames':{S: frames},
+      // 'frames':{S: frames},
       'isDeleted':{BOOL: isDeleted},
       'formatType':{S: formatType}
     }
   };
-    dynamodb.putItem(params, function(err, data) {
+      dynamodb.putItem(params, function(err, data) {
     if (err) {
       console.log("Error", err);
     } else {
       console.log("Success");
     }
   });
+
+  s3.putObject({
+    Bucket: "dlb-thumbnails",
+    Key: `frames/${animationId}.json`,
+    Body: frames,
+    ContentType:"application/json"
+
+}).promise()
 
   // makeThumbnail(`${username}/thumbnailFrames/${data_str["name"]}`,data_str["ThumbnailFrame"])
   makeThumbnail(animationId, data_str["ThumbnailFrame"])  
@@ -174,36 +201,19 @@ app.post('/saveAnimation',(request, response)=>{
 app.get('/loadAnimation/:filename', function (req, res) {
 
   const filename = req.params.filename
-  var params = {
-    ExpressionAttributeValues: {
-      ':u': {S: filename},
-    },
-    KeyConditionExpression: 'animationId = :u',
-    ProjectionExpression: 'frames',
-    TableName: dynamodbTableName
-  };
-  var dddd = []
-    dynamodb.query(params, function(err, data) {
-    if (err) {
-      console.log("Error", err);
-    } else {
-      dddd = data
+  var params = {Bucket:"dlb-thumbnails",Key:`frames/${filename}.json`}
+  
+  s3.getObject(params,function(err,data){
+    if(err){
     }
-    let animation = {"data":JSON.parse(dddd["Items"][0]["frames"]["S"]),"id":filename}
-    res.send(JSON.stringify(animation))
-  });
+    else {
+      var animation = {"data":JSON.parse(data.Body),"id":filename}
+      res.send(JSON.stringify(animation))
+    }
+  })
 
-  // var data = fs.readFileSync(__dirname+`/${username}/animations/${filename}.json`)
-  // var data_str = JSON.parse(data)
-  // res.send(data_str)
 })
 
-// app.get('/thumbnail/:filename/:username',checkJwt, function (req, res) {
-//   const filename = req.params.filename
-//   const username = req.params.username
-//   var thumbnailsPath = __dirname+`/${username}/thumbnailFrames`
-//     res.sendFile(`/${thumbnailsPath}/${filename}.png`);
-// })
 
 app.post('/markAsDeleted',(request, response)=>{
   var data_str = JSON.stringify(request.body)
