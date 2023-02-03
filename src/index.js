@@ -39,14 +39,12 @@ const s3 = new AWS.S3()
 
 const app = express();
 const apiRouter = express.Router();
-var options = {
-  key: fs.readFileSync('private.key'),
-  cert: fs.readFileSync('certificate.crt'),
-};
+// var options = {
+//   key: fs.readFileSync('private.key'),
+//   cert: fs.readFileSync('certificate.crt'),
+// };
 
-var server = https.createServer(options, app).listen(serverPort, function(){
-  console.log("Express server listening on port " + serverPort);
-});
+
 
 
 app.use(function(req, res, next) {
@@ -70,8 +68,12 @@ app.use(function (err, req, res, next) {
   res.status(500).send(err.message);
 });
 
-// app.listen(serverPort, () => {
-//   console.log(`API Server listening on port ${serverPort}`);
+app.listen(serverPort, () => {
+  console.log(`API Server listening on port ${serverPort}`);
+});
+
+// var server = https.createServer(options, app).listen(serverPort, function(){
+//   console.log("Express server listening on port " + serverPort);
 // });
 
 app.get('/check',function (req,res){
@@ -81,7 +83,7 @@ app.get('/check',function (req,res){
 )
 
 
-app.get('/animationsList/:username/:flag',function (req, res) {
+app.get('/animationsList/:username/:flag',checkJwt,function (req, res) {
   const username = req.params.username
   const flag = req.params.flag
   if(flag=="row"){
@@ -128,7 +130,7 @@ app.get('/animationsList/:username/:flag',function (req, res) {
 })
 
 
-app.post('/saveAnimation',(request, response)=>{
+app.post('/saveAnimation',checkJwt,(request, response)=>{
   var data = JSON.stringify(request.body)
   var data_str = JSON.parse(data)
   var userID = data_str["userID"]
@@ -197,8 +199,8 @@ app.post('/saveAnimation',(request, response)=>{
 
 })
 
-// app.get('/loadAnimation/:filename',checkJwt, function (req, res) {
-app.get('/loadAnimation/:filename', function (req, res) {
+app.get('/loadAnimation/:filename',checkJwt, function (req, res) {
+// app.get('/loadAnimation/:filename', function (req, res) {
 
   const filename = req.params.filename
   var params = {Bucket:"dlb-thumbnails",Key:`frames/${filename}.json`}
