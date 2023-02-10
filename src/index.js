@@ -217,7 +217,7 @@ app.get('/loadAnimation/:filename',checkJwt, function (req, res) {
 })
 
 
-app.post('/markAsDeleted',(request, response)=>{
+app.post('/markAsDeleted',checkJwt,(request, response)=>{
   var data_str = JSON.stringify(request.body)
   var data = JSON.parse(data_str)
 
@@ -245,7 +245,7 @@ app.post('/markAsDeleted',(request, response)=>{
 
 
 // app.post('/gif',checkJwt,(request, response)=>{
-app.post('/gif',(request, response)=>{
+app.post('/gif',checkJwt,(request, response)=>{
 
   var data = JSON.stringify(request.body)
   var data_str = JSON.parse(data)
