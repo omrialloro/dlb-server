@@ -14,10 +14,7 @@ const AWS = require("aws-sdk")
 var spawn = require('child_process').spawn
 const makePngs = require('./PngUtils.js').makePngs
 const makeThumbnail = require('./PngUtils.js').makeThumbnail
-
 var   https = require('https')
-
-
 
 
 
@@ -93,11 +90,13 @@ app.get('/animationsList/:username/:flag',checkJwt,function (req, res) {
       ExpressionAttributeValues: {
         ':u': {S: username},
         ':d': {BOOL: false},
-        ':t': {S: "row"}
+        ':t': {S: "row"},
+        ':s': {BOOL: true},
+
       },
       KeyConditionExpression: 'userID = :u',
       ProjectionExpression: 'animationId,animationName',
-      FilterExpression: 'isDeleted = :d and formatType=:t',
+      FilterExpression: 'isDeleted = :d and formatType=:t and saved=:s',
       TableName: dynamodbTableName
     };
   }
@@ -108,10 +107,12 @@ app.get('/animationsList/:username/:flag',checkJwt,function (req, res) {
       ExpressionAttributeValues: {
         ':u': {S: username},
         ':d': {BOOL: false},
+        ':s': {BOOL: true},
+
       },
       KeyConditionExpression: 'userID = :u',
       ProjectionExpression: 'animationId,animationName',
-      FilterExpression: 'isDeleted = :d',
+      FilterExpression: 'isDeleted = :d and saved =:s',
       TableName: dynamodbTableName
     };
   }
@@ -130,16 +131,49 @@ app.get('/animationsList/:username/:flag',checkJwt,function (req, res) {
 })
 
 
+app.post('/saveStoredAnimations',checkJwt,(request, response)=>{
+  var data = JSON.stringify(request.body)
+  var data_str = JSON.parse(data)
+  var userID = data_str["userID"]
+  var data = JSON.stringify(data_str["data"])
+
+  s3.putObject({
+    Bucket: "dlb-thumbnails",
+    Key: `storedAnimations/${userID}.json`,
+    Body: data,
+    ContentType:"application/json"
+
+  }).promise()
+})
+
+app.get('/loadStoredAnimations/:userID',checkJwt, function (req, res) {
+    const userID = req.params.userID
+    var params = {Bucket:"dlb-thumbnails",Key: `storedAnimations/${userID}.json`}
+    s3.getObject(params,function(err,data){
+      if(err){
+      }
+      else {
+        var data = JSON.parse(data.Body)
+        res.send(JSON.stringify(data))
+      }
+    })
+  
+  })
+
 app.post('/saveAnimation',checkJwt,(request, response)=>{
   var data = JSON.stringify(request.body)
   var data_str = JSON.parse(data)
   var userID = data_str["userID"]
   var isDeleted = data_str["isDeleted"]
   var formatType = data_str["formatType"]
+  var IsSaved = data_str["saved"]
   var name = data_str["name"]
   var frames = JSON.stringify(data_str["data"])
-
   var animationId = String(Date.now())
+  if(!IsSaved){
+     animationId = name
+  }
+
   console.log(animationId)
   var params = {
     TableName: dynamodbTableName,
@@ -148,9 +182,10 @@ app.post('/saveAnimation',checkJwt,(request, response)=>{
       'userName':{S: userID},
       'userID' : {S: userID},
       'animationId':{S: animationId},
-      // 'frames':{S: frames},
       'isDeleted':{BOOL: isDeleted},
-      'formatType':{S: formatType}
+      'formatType':{S: formatType},
+      'saved':{BOOL: IsSaved},
+      'date':{S:String(Date.now())}
     }
   };
       dynamodb.putItem(params, function(err, data) {
@@ -193,10 +228,6 @@ app.post('/saveAnimation',checkJwt,(request, response)=>{
 
 
   },1000)
-
-  
-
-
 })
 
 app.get('/loadAnimation/:filename',checkJwt, function (req, res) {
@@ -207,6 +238,7 @@ app.get('/loadAnimation/:filename',checkJwt, function (req, res) {
   
   s3.getObject(params,function(err,data){
     if(err){
+      res.send(JSON.stringify({"data":-1,"id":-1}))      
     }
     else {
       var animation = {"data":JSON.parse(data.Body),"id":filename}
@@ -226,7 +258,7 @@ app.post('/markAsDeleted',checkJwt,(request, response)=>{
     const params = {
       TableName: dynamodbTableName,
       Key: {
-        animationId: id,
+        'animationId': id,
       },
       UpdateExpression: 'set isDeleted = :r',
       ExpressionAttributeValues: {
@@ -242,6 +274,31 @@ app.post('/markAsDeleted',checkJwt,(request, response)=>{
   }
 }
 )
+
+app.post('/deleteStoredAnimation',checkJwt,(request, response)=>{
+  console.log("FFFFFF")
+  console.log(request.body)
+  let animationId = String(request.body["animationId"])
+  console.log(animationId)
+  var fileItem = {
+    Key: {
+      'animationId':{S:animationId}
+    },
+    TableName: dynamodbTableName,
+};
+  dynamodb.deleteItem(fileItem, function(err, data) {
+    if (err) {
+      console.log(err, err.stack);
+    }
+    else {
+      console.log(data);
+    }
+  });
+
+  s3.deleteObject({ Bucket: "dlb-thumbnails", Key: `frames/${animationId}.json` }).promise()
+
+  // var data_str = JSON.stringify(request.body)
+})
 
 
 // app.post('/gif',checkJwt,(request, response)=>{
