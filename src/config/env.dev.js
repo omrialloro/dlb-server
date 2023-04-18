@@ -19,7 +19,7 @@ if (!domain) {
     );
 }
 
-const clientOrigins = ['http://localhost:4040'];
+const clientOrigins = ['http://localhost:4040', 'http://localhost:3000'];
 
 module.exports = {
     audience,
