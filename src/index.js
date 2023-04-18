@@ -143,19 +143,22 @@ app.get('/animationsList/:username/:flag', checkJwt, function (req, res) {
 })
 
 
-app.post('/saveStoredAnimations', checkJwt, (request, response) => {
+app.post('/saveStoredAnimations', checkJwt, async (request, response) => {
   var data = JSON.stringify(request.body)
   var data_str = JSON.parse(data)
+  // TODO: USE userid FROM JWT
   var userID = data_str["userID"]
   var data = JSON.stringify(data_str["data"])
 
-  s3.putObject({
+  await s3.putObject({
     Bucket: "dlb-thumbnails",
     Key: `storedAnimations/${userID}.json`,
     Body: data,
     ContentType: "application/json"
 
-  }).promise()
+  }).promise();
+
+  return response.send('ok')
 })
 
 app.get('/loadStoredAnimations/:userID', checkJwt, function (req, res) {
