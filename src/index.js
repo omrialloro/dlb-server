@@ -43,7 +43,8 @@ const apiRouter = express.Router();
 // };
 
 
-
+var morgan = require('morgan')
+app.use(morgan('dev'))
 
 
 
