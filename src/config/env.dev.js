@@ -1,5 +1,4 @@
-const dotenv = require('dotenv');
-require('dotenv').config({path:__dirname+'/./../../.env'})
+require('dotenv').config()
 
 
 const audience = process.env.AUTH0_AUDIENCE;
