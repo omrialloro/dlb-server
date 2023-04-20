@@ -1,20 +1,30 @@
-const jwt = require('express-jwt');
-const jwksRsa = require('jwks-rsa');
-const { domain, audience } = require('../config/env.dev');
+const jwt = require("jsonwebtoken");
 
-const checkJwt = jwt({
-    secret: jwksRsa.expressJwtSecret({
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 5,
-        jwksUri: `https://${domain}/.well-known/jwks.json`,
-    }),
+const checkJwt = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-    audience: audience,
-    issuer: `https://${domain}/`,
-    algorithms: ['RS256'],
-});
+  if (!authHeader) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await getUserByEmail(decoded.user.email);
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    req.user = user;
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 module.exports = {
-    checkJwt,
+  checkJwt,
 };
