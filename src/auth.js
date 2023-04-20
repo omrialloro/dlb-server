@@ -1,18 +1,8 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const AWS = require("aws-sdk");
+const { getUserByEmail, createUser } = require("./db/users");
 const router = express.Router();
-
-// configure AWS SDK with your credentials
-AWS.config.update({
-  accessKeyId: "your_access_key_id",
-  secretAccessKey: "your_secret_access_key",
-  region: "your_region",
-});
-
-// create a new instance of the DynamoDB DocumentClient
-const docClient = new AWS.DynamoDB.DocumentClient();
 
 // middleware to check JWT token and populate request with user record
 
@@ -20,6 +10,7 @@ router.post("/auth", async (req, res) => {
   const { email, password, isRegister } = req.body;
 
   try {
+    console.log("email", email);
     let user = await getUserByEmail(email);
 
     // if isRegister is true and user already exists, return an error
@@ -60,30 +51,5 @@ router.post("/auth", async (req, res) => {
   }
 });
 
-// function to get user by email from DynamoDB
-async function getUserByEmail(email) {
-  const params = {
-    TableName: "users",
-    Key: {
-      email,
-    },
-  };
-
-  const data = await docClient.get(params).promise();
-  return data.Item;
-}
-
-// function to create a new user in DynamoDB
-async function createUser(email, password) {
-  const params = {
-    TableName: "users",
-    Item: {
-      email,
-      password,
-    },
-  };
-
-  await docClient.put(params).promise();
-}
 
 module.exports = router;

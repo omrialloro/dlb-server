@@ -4,6 +4,7 @@
 
 const express = require("express");
 const router = express.Router();
+require("dotenv").config();
 
 const cors = require("cors");
 const helmet = require("helmet");
@@ -31,6 +32,7 @@ const s3 = new AWS.S3();
 const app = express();
 
 var morgan = require("morgan");
+const { log } = require("console");
 app.use(morgan("dev"));
 
 app.use(function (req, res, next) {
@@ -75,30 +77,29 @@ app.get("/check", checkJwt, function (req, res) {
 // }
 // )
 
-app.get("/animationsList/:type", checkJwt, function (req, res) {
+app.get("/animationsList", checkJwt, function (req, res) {
   console.log("FFF");
   const type = req.params.type;
   const isRow = type === "row";
-  if (flag == "row") {
-    var params = {
-      IndexName: "userID-index",
-      ExpressionAttributeValues: {
-        ":u": { S: username },
-        ":d": { BOOL: false },
-        ":s": { BOOL: true },
-        ...(isRow
-          ? {
-              ":t": { S: "row" },
-            }
-          : undefined),
-      },
-      KeyConditionExpression: "userID = :u",
-      ProjectionExpression: "animationId,animationName",
-      FilterExpression:
-        "isDeleted = :d and saved=:s" + (isRow ? "and formatType=:t" : ""),
-      TableName: dynamodbTableName,
-    };
-  }
+  var params = {
+    IndexName: "userID-index",
+    ExpressionAttributeValues: {
+      ":u": { S: req.user.email },
+      ":d": { BOOL: false },
+      ":s": { BOOL: true },
+      ...(isRow
+        ? {
+            ":t": { S: "row" },
+          }
+        : undefined),
+    },
+    KeyConditionExpression: "userID = :u",
+    ProjectionExpression: "animationId,animationName",
+    FilterExpression:
+      "isDeleted = :d and saved=:s" + (isRow ? "and formatType=:t" : ""),
+    TableName: dynamodbTableName,
+  };
+
   dynamodb.query(params, function (err, data) {
     if (err) {
       console.log("Error", err);
@@ -145,10 +146,10 @@ app.get("/loadStoredAnimations/:userID", checkJwt, function (req, res) {
   });
 });
 
-app.post("/saveAnimation", checkJwt, (request, response) => {
-  var data = JSON.stringify(request.body);
+app.post("/saveAnimation", checkJwt, async (req, res) => {
+  var data = JSON.stringify(req.body);
   var data_str = JSON.parse(data);
-  var userID = data_str["userID"];
+  var userID = req.user.email;
   console.log(userID);
   var isDeleted = data_str["isDeleted"];
   var formatType = data_str["formatType"];
@@ -156,13 +157,11 @@ app.post("/saveAnimation", checkJwt, (request, response) => {
   var name = data_str["name"];
   var frames = JSON.stringify(data_str["data"]);
   var animationId = String(Date.now());
-  console.log(animationId);
 
   if (!IsSaved) {
     animationId = name;
   }
 
-  console.log(animationId);
   var params = {
     TableName: dynamodbTableName,
     Item: {
@@ -176,41 +175,35 @@ app.post("/saveAnimation", checkJwt, (request, response) => {
       date: { S: String(Date.now()) },
     },
   };
-  dynamodb.putItem(params, function (err, data) {
-    if (err) {
-      console.log("Error", err);
-    } else {
-      console.log("Success");
-    }
-  });
+  await dynamodb
+    .putItem(params, function (err, data) {
+      if (err) {
+        console.log("Error", err);
+      } else {
+        console.log("Success");
+      }
+    })
+    .promise();
 
-  s3.putObject({
-    Bucket: "dlb-thumbnails",
-    Key: `frames/${animationId}.json`,
-    Body: frames,
-    ContentType: "application/json",
-  }).promise();
+  await s3
+    .putObject({
+      Bucket: "dlb-thumbnails",
+      Key: `frames/${animationId}.json`,
+      Body: frames,
+      ContentType: "application/json",
+    })
+    .promise();
 
-  // makeThumbnail(`${username}/thumbnailFrames/${data_str["name"]}`,data_str["ThumbnailFrame"])
-  makeThumbnail(animationId, data_str["ThumbnailFrame"]);
-
-  setTimeout(() => {
-    fs.readFile(`${animationId}.png`, (err, fileData) => {
-      s3.putObject({
-        Bucket: "dlb-thumbnails",
-        Key: `${animationId}.png`,
-        Body: fileData,
-        ContentType: "image/png",
-      })
-        .promise()
-        .then(() => {
-          setTimeout(() => {
-            fs.unlinkSync(`${animationId}.png`);
-            console.log("NOwww");
-          }, 20000);
-        });
-    });
-  }, 1000);
+  const thumbnailBuffer = makeThumbnail(data_str["ThumbnailFrame"]);
+  await s3
+    .putObject({
+      Bucket: "dlb-thumbnails",
+      Key: `${animationId}.png`,
+      Body: thumbnailBuffer,
+      ContentType: "image/png",
+    })
+    .promise();
+  return res.send();
 });
 
 app.get("/loadAnimation/:filename", checkJwt, function (req, res) {
