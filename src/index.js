@@ -66,16 +66,9 @@ app.listen(serverPort, () => {
 
 app.use(require("./auth"));
 app.get("/check", checkJwt, function (req, res) {
-  console.log("running");
-  console.log("fff");
-
   res.send("ok");
 });
 
-// app.get('/check',checkJwt,function (req,res){
-//   res.send("ok")
-// }
-// )
 
 app.get("/animationsList", checkJwt, function (req, res) {
   console.log("FFF");
