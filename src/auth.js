@@ -10,7 +10,6 @@ router.post("/auth", async (req, res) => {
   const { email, password, isRegister } = req.body;
 
   try {
-    console.log("email", email);
     let user = await getUserByEmail(email);
 
     // if isRegister is true and user already exists, return an error
@@ -50,6 +49,5 @@ router.post("/auth", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 module.exports = router;

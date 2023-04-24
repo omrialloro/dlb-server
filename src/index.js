@@ -69,7 +69,6 @@ app.get("/check", checkJwt, function (req, res) {
   res.send("ok");
 });
 
-
 app.get("/animationsList", checkJwt, function (req, res) {
   console.log("FFF");
   const type = req.params.type;
