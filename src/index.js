@@ -339,12 +339,21 @@ app.post("/gif", checkJwt, (req, res) => {
   }
   // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
 
+  const gifData = encoder.out.getData();
+
   res.writeHead(200, {
     "Content-Type": "image/gif",
-    "Content-Disposition": "attachment; filename=mygif.gif",
-    "Access-Control-Allow-Origin": "*",
+    "Content-Disposition": 'attachment; filename="generated.gif"',
+    "Access-Control-Allow-Origin": "*", // allow requests from any origin
   });
-  encoder.createReadStream().pipe(res);
+  res.end(Buffer.from(gifData));
+
+  // res.writeHead(200, {
+  //   "Content-Type": "image/gif",
+  //   "Content-Disposition": "attachment; filename=mygif.gif",
+  //   "Access-Control-Allow-Origin": "*",
+  // });
+  // encoder.createReadStream().pipe(res);
   encoder.finish();
 });
 
