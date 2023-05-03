@@ -140,7 +140,7 @@ app.get("/loadStoredAnimations/:userID", checkJwt, function (req, res) {
   });
 });
 
-app.post("/saveAnimation", checkJwt, async (req, res) => {
+app.post("/saveAnimationn", checkJwt, async (req, res) => {
   var data = JSON.stringify(req.body);
   var data_str = JSON.parse(data);
   var userID = req.user.email;
