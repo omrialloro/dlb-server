@@ -140,65 +140,65 @@ app.get("/loadStoredAnimations/:userID", checkJwt, function (req, res) {
   });
 });
 
-// app.post("/saveAnimation", checkJwt, async (req, res) => {
-//   var data = JSON.stringify(req.body);
-//   var data_str = JSON.parse(data);
-//   var userID = req.user.email;
-//   console.log(userID);
-//   var isDeleted = data_str["isDeleted"];
-//   var formatType = data_str["formatType"];
-//   var IsSaved = data_str["saved"];
-//   var name = data_str["name"];
-//   var frames = JSON.stringify(data_str["data"]);
-//   var animationId = String(Date.now());
+app.post("/saveAnimation", checkJwt, async (req, res) => {
+  var data = JSON.stringify(req.body);
+  var data_str = JSON.parse(data);
+  var userID = req.user.email;
+  console.log(userID);
+  var isDeleted = data_str["isDeleted"];
+  var formatType = data_str["formatType"];
+  var IsSaved = data_str["saved"];
+  var name = data_str["name"];
+  var frames = JSON.stringify(data_str["data"]);
+  var animationId = String(Date.now());
 
-//   if (!IsSaved) {
-//     animationId = name;
-//   }
+  if (!IsSaved) {
+    animationId = name;
+  }
 
-//   var params = {
-//     TableName: dynamodbTableName,
-//     Item: {
-//       animationName: { S: name },
-//       userName: { S: userID },
-//       userID: { S: userID },
-//       animationId: { S: animationId },
-//       isDeleted: { BOOL: isDeleted },
-//       formatType: { S: formatType },
-//       saved: { BOOL: IsSaved },
-//       date: { S: String(Date.now()) },
-//     },
-//   };
-//   await dynamodb
-//     .putItem(params, function (err, data) {
-//       if (err) {
-//         console.log("Error", err);
-//       } else {
-//         console.log("Success");
-//       }
-//     })
-//     .promise();
+  var params = {
+    TableName: dynamodbTableName,
+    Item: {
+      animationName: { S: name },
+      userName: { S: userID },
+      userID: { S: userID },
+      animationId: { S: animationId },
+      isDeleted: { BOOL: isDeleted },
+      formatType: { S: formatType },
+      saved: { BOOL: IsSaved },
+      date: { S: String(Date.now()) },
+    },
+  };
+  await dynamodb
+    .putItem(params, function (err, data) {
+      if (err) {
+        console.log("Error", err);
+      } else {
+        console.log("Success");
+      }
+    })
+    .promise();
 
-//   await s3
-//     .putObject({
-//       Bucket: "dlb-thumbnails",
-//       Key: `frames/${animationId}.json`,
-//       Body: frames,
-//       ContentType: "application/json",
-//     })
-//     .promise();
+  await s3
+    .putObject({
+      Bucket: "dlb-thumbnails",
+      Key: `frames/${animationId}.json`,
+      Body: frames,
+      ContentType: "application/json",
+    })
+    .promise();
 
-//   const thumbnailBuffer = makeThumbnail(data_str["ThumbnailFrame"]);
-//   await s3
-//     .putObject({
-//       Bucket: "dlb-thumbnails",
-//       Key: `${animationId}.png`,
-//       Body: thumbnailBuffer,
-//       ContentType: "image/png",
-//     })
-//     .promise();
-//   return res.send();
-// });
+  const thumbnailBuffer = makeThumbnail(data_str["ThumbnailFrame"]);
+  await s3
+    .putObject({
+      Bucket: "dlb-thumbnails",
+      Key: `${animationId}.png`,
+      Body: thumbnailBuffer,
+      ContentType: "image/png",
+    })
+    .promise();
+  return res.send();
+});
 
 app.get("/loadAnimation/:filename", checkJwt, function (req, res) {
   // app.get('/loadAnimation/:filename', function (req, res) {
@@ -321,7 +321,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 //   }, 500);
 // });
 
-app.post("/saveAnimation", checkJwt, (req, res) => {
+app.post("/gif", checkJwt, (req, res) => {
   const { frames, delay } = req.body;
   const num_pixels = frames[0].length;
   const pixel_size = 10;
