@@ -337,7 +337,7 @@ app.post("/gif", checkJwt, (req, res) => {
   for (let i = 0; i < frames.length; i++) {
     encoder.addFrame(Parser(frames[i]));
   }
-  encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
+  // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
 
   res.writeHead(200, {
     "Content-Type": "image/gif",
@@ -347,30 +347,7 @@ app.post("/gif", checkJwt, (req, res) => {
   encoder.createReadStream().pipe(res);
   encoder.finish();
 });
-// app.get("/download/:filename/:username", (req, res) => {
-//   let filename = req.params.filename;
-//   let username = req.params.username;
-//   gif_path = `${username}/extracted_gifs/${filename}.gif`;
-//   let is_ready = false;
-//   const intervalObj = setInterval(function () {
-//     let file = gif_path;
-//     let fileExists = fs.existsSync(file);
-//     if (fileExists) {
-//       is_ready = fs.statSync(gif_path).size > 100;
-//     }
-//     console.log("is exists:" + fileExists);
-//     console.log("is ready:" + is_ready);
 
-//     if (is_ready) {
-//       clearInterval(intervalObj);
-//       setTimeout(() => {
-//         res.download(gif_path);
-//         console.log("READY");
-//       }, 4000);
-//       // setTimeout(()=>{fs.unlinkSync(gif_path)},10000)
-//     }
-//   }, 2000);
-// });
 app.get("/download/:filename/:username", (req, res) => {
   let filename = req.params.filename;
   let username = req.params.username;
