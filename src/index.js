@@ -343,8 +343,9 @@ app.post("/gif", checkJwt, (req, res) => {
 
   res.writeHead(200, {
     "Content-Type": "image/gif",
-    "Content-Disposition": 'attachment; filename="generated.gif"',
+    "Content-Disposition": 'attachment; filename="mygif.gif"',
     "Access-Control-Allow-Origin": "*", // allow requests from any origin
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   });
   res.end(Buffer.from(gifData));
 
