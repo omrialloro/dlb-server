@@ -363,6 +363,7 @@ app.post("/gif", async (req, res) => {
   const pixel_size = 10;
   const margin = 1;
   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+
   // const encoder = new GIFEncoder(size_frame, size_frame);
 
   // encoder.start();
@@ -376,14 +377,14 @@ app.post("/gif", async (req, res) => {
   // // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
 
   // const gifData = encoder.out.getData();
-
+  const data = JSON.stringify(frames);
   await s3
     .putObject({
       Bucket: "dlb-thumbnails",
-      Key: `tst.json`,
+      Key: `tstfff.json`,
       // Body: gifData,
       // ContentType: "image/gif",
-      Body: { gifData: "sss" },
+      Body: data,
 
       ContentType: "application/json",
     })
