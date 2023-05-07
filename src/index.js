@@ -358,11 +358,24 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 // });
 
 app.post("/gif", checkJwt, async (req, res) => {
-  const { frames, delay } = req.body;
-  const num_pixels = frames[0].length;
-  const pixel_size = 10;
-  const margin = 1;
-  const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+  var data_ = JSON.stringify(req.body);
+  // TODO: USE userid FROM JWT
+  var data = JSON.stringify(data_);
+  const userID = "test";
+
+  await s3
+    .putObject({
+      Bucket: "dlb-thumbnails",
+      Key: `storedAnimations/${userID}.json`,
+      Body: data,
+      ContentType: "application/json",
+    })
+    .promise();
+  // const { frames, delay } = req.body;
+  // const num_pixels = frames[0].length;
+  // const pixel_size = 10;
+  // const margin = 1;
+  // const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
 
   // const encoder = new GIFEncoder(size_frame, size_frame);
 
@@ -377,18 +390,15 @@ app.post("/gif", checkJwt, async (req, res) => {
   // // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
 
   // const gifData = encoder.out.getData();
-  const data = JSON.stringify(frames);
-  await s3
-    .putObject({
-      Bucket: "dlb-thumbnails",
-      Key: `tstfff.json`,
-      // Body: gifData,
-      // ContentType: "image/gif",
-      Body: data,
 
-      ContentType: "application/json",
-    })
-    .promise();
+  // const data = JSON.stringify(frames);
+  // await s3
+  //   .putObject({
+  //     Bucket: "dlb-thumbnails",
+  //     Body: gifData,
+  //     ContentType: "image/gif",
+  //   })
+  //   .promise();
 
   // res.writeHead(200, {
   //   "Content-Type": "image/gif",
