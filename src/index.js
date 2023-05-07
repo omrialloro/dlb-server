@@ -357,7 +357,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 //   encoder.finish();
 // });
 
-app.post("/gif", async (req, res) => {
+app.post("/gif", checkJwt, async (req, res) => {
   const { frames, delay } = req.body;
   const num_pixels = frames[0].length;
   const pixel_size = 10;
