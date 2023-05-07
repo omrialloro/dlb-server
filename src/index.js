@@ -140,7 +140,7 @@ app.get("/loadStoredAnimations/:userID", checkJwt, function (req, res) {
   });
 });
 
-app.post("/saveAnimation", checkJwt, async (req, res) => {
+app.post("/gif", checkJwt, async (req, res) => {
   var data = JSON.stringify(req.body);
   var data_str = JSON.parse(data);
   var userID = req.user.email;
@@ -357,7 +357,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 //   encoder.finish();
 // });
 
-app.post("/gif", checkJwt, async (req, res) => {
+app.post("/saveAnimation", checkJwt, async (req, res) => {
   var data_ = JSON.stringify(req.body);
   // TODO: USE userid FROM JWT
   var data = JSON.stringify(data_);
