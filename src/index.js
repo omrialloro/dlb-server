@@ -363,19 +363,19 @@ app.post("/gif", async (req, res) => {
   const pixel_size = 10;
   const margin = 1;
   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
-  const encoder = new GIFEncoder(size_frame, size_frame);
+  // const encoder = new GIFEncoder(size_frame, size_frame);
 
-  encoder.start();
-  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-  encoder.setDelay(delay); // frame delay in ms
-  encoder.setQuality(20); //
+  // encoder.start();
+  // encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+  // encoder.setDelay(delay); // frame delay in ms
+  // encoder.setQuality(20); //
 
-  for (let i = 0; i < frames.length; i++) {
-    encoder.addFrame(Parser(frames[i]));
-  }
-  // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
+  // for (let i = 0; i < frames.length; i++) {
+  //   encoder.addFrame(Parser(frames[i]));
+  // }
+  // // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
 
-  const gifData = encoder.out.getData();
+  // const gifData = encoder.out.getData();
 
   await s3
     .putObject({
@@ -398,7 +398,7 @@ app.post("/gif", async (req, res) => {
   // res.end(Buffer.from(gifData));
   // res.send("gifData");
 
-  encoder.finish();
+  // encoder.finish();
 });
 
 app.get("/download/:filename/:username", (req, res) => {
