@@ -240,7 +240,6 @@ app.post("/markAsDeleted", checkJwt, (request, response) => {
 });
 
 app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
-  console.log("FFFFFF");
   console.log(request.body);
   let animationId = String(request.body["animationId"]);
   console.log(animationId);
@@ -358,7 +357,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 //   encoder.finish();
 // });
 
-app.post("/gif", (req, res) => {
+app.post("/gif", async (req, res) => {
   const { frames, delay } = req.body;
   const num_pixels = frames[0].length;
   const pixel_size = 10;
@@ -378,76 +377,26 @@ app.post("/gif", (req, res) => {
 
   const gifData = encoder.out.getData();
 
-  res.writeHead(200, {
-    "Content-Type": "image/gif",
-    "Content-Disposition": 'attachment; filename="mygif.gif"',
-    "Access-Control-Allow-Origin": "*", // allow requests from any origin
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  });
-  res.end(Buffer.from(gifData));
+  await s3
+    .putObject({
+      Bucket: "dlb-thumbnails",
+      Key: `tst.gif`,
+      Body: gifData,
+      ContentType: "image/gif",
+    })
+    .promise();
+
+  // res.writeHead(200, {
+  //   "Content-Type": "image/gif",
+  //   "Content-Disposition": 'attachment; filename="mygif.gif"',
+  //   "Access-Control-Allow-Origin": "*", // allow requests from any origin
+  //   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  // });
+  // res.end(Buffer.from(gifData));
+  // res.send("gifData");
 
   encoder.finish();
 });
-
-// app.post("/gif", checkJwt, async (req, res) => {
-//   var data = JSON.stringify(req.body);
-//   var data_str = JSON.parse(data);
-//   var userID = req.user.email;
-//   console.log(userID);
-//   var isDeleted = data_str["isDeleted"];
-//   var formatType = data_str["formatType"];
-//   var IsSaved = data_str["saved"];
-//   var name = data_str["name"];
-//   var frames = JSON.stringify(data_str["data"]);
-//   var animationId = String(Date.now());
-
-//   if (!IsSaved) {
-//     animationId = name;
-//   }
-
-//   var params = {
-//     TableName: dynamodbTableName,
-//     Item: {
-//       animationName: { S: name },
-//       userName: { S: userID },
-//       userID: { S: userID },
-//       animationId: { S: animationId },
-//       isDeleted: { BOOL: isDeleted },
-//       formatType: { S: formatType },
-//       saved: { BOOL: IsSaved },
-//       date: { S: String(Date.now()) },
-//     },
-//   };
-//   await dynamodb
-//     .putItem(params, function (err, data) {
-//       if (err) {
-//         console.log("Error", err);
-//       } else {
-//         console.log("Success");
-//       }
-//     })
-//     .promise();
-
-//   await s3
-//     .putObject({
-//       Bucket: "dlb-thumbnails",
-//       Key: `frames/${animationId}.json`,
-//       Body: frames,
-//       ContentType: "application/json",
-//     })
-//     .promise();
-
-//   const thumbnailBuffer = makeThumbnail(data_str["ThumbnailFrame"]);
-//   await s3
-//     .putObject({
-//       Bucket: "dlb-thumbnails",
-//       Key: `${animationId}.png`,
-//       Body: thumbnailBuffer,
-//       ContentType: "image/png",
-//     })
-//     .promise();
-//   return res.send();
-// });
 
 app.get("/download/:filename/:username", (req, res) => {
   let filename = req.params.filename;
