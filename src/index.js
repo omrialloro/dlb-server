@@ -140,7 +140,7 @@ app.get("/loadStoredAnimations/:userID", checkJwt, function (req, res) {
   });
 });
 
-app.post("/gif", checkJwt, async (req, res) => {
+app.post("/saveAnimation", checkJwt, async (req, res) => {
   var data = JSON.stringify(req.body);
   var data_str = JSON.parse(data);
   var userID = req.user.email;
@@ -357,48 +357,35 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 //   encoder.finish();
 // });
 
-app.post("/saveAnimation", checkJwt, async (req, res) => {
-  var data_ = JSON.stringify(req.body);
-  // TODO: USE userid FROM JWT
-  var data = JSON.stringify(data_);
-  const userID = "test";
+app.post("/gif", checkJwt, async (req, res) => {
+  const { frames, delay } = req.body;
+  const num_pixels = frames[0].length;
+  const pixel_size = 10;
+  const margin = 1;
+  const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
 
+  const encoder = new GIFEncoder(size_frame, size_frame);
+
+  encoder.start();
+  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+  encoder.setDelay(delay); // frame delay in ms
+  encoder.setQuality(20); //
+
+  for (let i = 0; i < frames.length; i++) {
+    encoder.addFrame(Parser(frames[i]));
+  }
+  // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
+
+  const gifData = encoder.out.getData();
+  const data = JSON.stringify(frames);
   await s3
     .putObject({
       Bucket: "dlb-thumbnails",
-      Key: `storedAnimations/${userID}.json`,
-      Body: data,
-      ContentType: "application/json",
+      Key: `tstfff.gif`,
+      Body: gifData,
+      ContentType: "image/gif",
     })
     .promise();
-  // const { frames, delay } = req.body;
-  // const num_pixels = frames[0].length;
-  // const pixel_size = 10;
-  // const margin = 1;
-  // const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
-
-  // const encoder = new GIFEncoder(size_frame, size_frame);
-
-  // encoder.start();
-  // encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-  // encoder.setDelay(delay); // frame delay in ms
-  // encoder.setQuality(20); //
-
-  // for (let i = 0; i < frames.length; i++) {
-  //   encoder.addFrame(Parser(frames[i]));
-  // }
-  // // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
-
-  // const gifData = encoder.out.getData();
-
-  // const data = JSON.stringify(frames);
-  // await s3
-  //   .putObject({
-  //     Bucket: "dlb-thumbnails",
-  //     Body: gifData,
-  //     ContentType: "image/gif",
-  //   })
-  //   .promise();
 
   // res.writeHead(200, {
   //   "Content-Type": "image/gif",
@@ -410,6 +397,7 @@ app.post("/saveAnimation", checkJwt, async (req, res) => {
   // res.send("gifData");
 
   // encoder.finish();
+  return res.send();
 });
 
 app.get("/download/:filename/:username", (req, res) => {
