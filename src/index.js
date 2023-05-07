@@ -380,9 +380,12 @@ app.post("/gif", async (req, res) => {
   await s3
     .putObject({
       Bucket: "dlb-thumbnails",
-      Key: `tst.gif`,
-      Body: gifData,
-      ContentType: "image/gif",
+      Key: `tst.json`,
+      // Body: gifData,
+      // ContentType: "image/gif",
+      Body: { gifData: "sss" },
+
+      ContentType: "application/json",
     })
     .promise();
 
