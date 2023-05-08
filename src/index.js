@@ -348,6 +348,7 @@ app.post("/gif", checkJwt, async (req, res) => {
       ContentType: "application/json",
     })
     .promise();
+  return res.send();
 });
 
 exports.handler = serverlessExpress({ app });
