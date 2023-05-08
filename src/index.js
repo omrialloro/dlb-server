@@ -342,14 +342,14 @@ app.post("/gif", checkJwt, async (req, res) => {
 
   const encoder = new GIFEncoder(size_frame, size_frame);
 
-  // encoder.start();
-  // encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-  // encoder.setDelay(delay); // frame delay in ms
-  // encoder.setQuality(20); //
+  encoder.start();
+  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+  encoder.setDelay(delay); // frame delay in ms
+  encoder.setQuality(20); //
 
-  // for (let i = 0; i < frames.length; i++) {
-  //   encoder.addFrame(Parser(frames[i]));
-  // }
+  for (let i = 0; i < frames.length; i++) {
+    encoder.addFrame(Parser(frames[i]));
+  }
 
   // const gifData = encoder.out.getData();
   // console.log(gifData);
