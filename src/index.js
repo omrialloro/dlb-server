@@ -338,6 +338,8 @@ app.post("/gif", checkJwt, async (req, res) => {
     `https://dlb-thumbnails.s3.eu-central-1.amazonaws.com/frames/${animationId}.json`
   );
 
+  console.log("DDDD");
+
   await s3
     .putObject({
       Bucket: "dlb-thumbnails",
