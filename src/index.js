@@ -265,67 +265,13 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
   // var data_str = JSON.stringify(request.body)
 });
 
-// app.post('/gif',checkJwt,(request, response)=>{
-
-// app.post("/gif", checkJwt, (request, response) => {
-//   var data = JSON.stringify(request.body);
-//   var data_str = JSON.parse(data);
-//   var username = data_str["username"];
-
-//   var name = data_str["name"];
-//   console.log("name is:" + name);
-//   var speed = data_str["speed"];
-//   console.log(`speed is:${speed}`);
-//   var frames = data_str["data"];
-//   let num_files = frames.length;
-//   console.log("number of frames is:" + num_files);
-
-//   var gifs_path = `${username}/extracted_gifs`;
-
-//   if (!fs.existsSync(username)) {
-//     fs.mkdirSync(username);
-//   }
-//   if (!fs.existsSync(gifs_path)) {
-//     fs.mkdirSync(gifs_path);
-//   }
-
-//   fs.writeFile(
-//     `${username}/extracted_gifs/${data_str["name"]}.json`,
-//     data,
-//     function (err) {
-//       if (err) return console.log(err);
-//     }
-//   );
-
-//   makePngs(name, frames);
-//   console.log("exit makePngs");
-//   if (!fs.existsSync("extracted_gifs")) {
-//     fs.mkdirSync("extracted_gifs");
-//   }
-
-//   let counter = 0;
-//   const intervalObj = setInterval(function () {
-//     counter += 1;
-//     console.log("counter is" + counter);
-//     let is_ready = checkFilesReady(name, num_files);
-//     console.log("is_ready: " + is_ready);
-//     if (is_ready && counter > 10) {
-//       clearInterval(intervalObj);
-//       setTimeout(() => {
-//         console.log("files are ready");
-//         console.log("calling python...");
-//         spawn("python3", ["convert_png.py", name, username, speed]);
-//       }, 3000);
-//     }
-//   }, 500);
-// });
-
-// app.post("/gif", checkJwt, (req, res) => {
+// app.post("/gif", checkJwt, async (req, res) => {
 //   const { frames, delay } = req.body;
 //   const num_pixels = frames[0].length;
 //   const pixel_size = 10;
 //   const margin = 1;
 //   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+
 //   const encoder = new GIFEncoder(size_frame, size_frame);
 
 //   encoder.start();
@@ -336,111 +282,52 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 //   for (let i = 0; i < frames.length; i++) {
 //     encoder.addFrame(Parser(frames[i]));
 //   }
-//   // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
 
 //   const gifData = encoder.out.getData();
 
 //   res.writeHead(200, {
 //     "Content-Type": "image/gif",
 //     "Content-Disposition": 'attachment; filename="mygif.gif"',
-//     "Access-Control-Allow-Origin": "*", // allow requests from any origin
-//     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+//     // "Access-Control-Allow-Origin": "*", // allow requests from any origin
+//     // "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 //   });
 //   res.end(Buffer.from(gifData));
 
-//   // res.writeHead(200, {
-//   //   "Content-Type": "image/gif",
-//   //   "Content-Disposition": "attachment; filename=mygif.gif",
-//   //   "Access-Control-Allow-Origin": "*",
-//   // });
-//   // encoder.createReadStream().pipe(res);
 //   encoder.finish();
 // });
 
 app.post("/gif", checkJwt, async (req, res) => {
-  const { frames, delay } = req.body;
-  const num_pixels = frames[0].length;
-  const pixel_size = 10;
-  const margin = 1;
-  const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+  try {
+    const { frames, delay } = req.body;
+    const num_pixels = frames[0].length;
+    const pixel_size = 10;
+    const margin = 1;
+    const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
 
-  const encoder = new GIFEncoder(size_frame, size_frame);
+    const encoder = new GIFEncoder(size_frame, size_frame);
 
-  encoder.start();
-  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-  encoder.setDelay(delay); // frame delay in ms
-  encoder.setQuality(20); //
+    encoder.start();
+    encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+    encoder.setDelay(delay); // frame delay in ms
+    encoder.setQuality(20); //
 
-  for (let i = 0; i < frames.length; i++) {
-    encoder.addFrame(Parser(frames[i]));
+    for (let i = 0; i < frames.length; i++) {
+      encoder.addFrame(Parser(frames[i]));
+    }
+
+    const gifData = encoder.out.getData();
+
+    res.writeHead(200, {
+      "Content-Type": "image/gif",
+      "Content-Disposition": 'attachment; filename="mygif.gif"',
+    });
+    res.end(Buffer.from(gifData));
+
+    encoder.finish();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Internal Server Error" });
   }
-  // encoder.createReadStream().pipe(fs.createWriteStream("myanimated.gif"));
-
-  const gifData = encoder.out.getData();
-  const data = JSON.stringify(frames);
-  await s3
-    .putObject({
-      Bucket: "dlb-thumbnails",
-      Key: `tstfff.gif`,
-      Body: gifData,
-      ContentType: "image/gif",
-    })
-    .promise();
-
-  // res.writeHead(200, {
-  //   "Content-Type": "image/gif",
-  //   "Content-Disposition": 'attachment; filename="mygif.gif"',
-  //   "Access-Control-Allow-Origin": "*", // allow requests from any origin
-  //   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  // });
-  // res.end(Buffer.from(gifData));
-  // res.send("gifData");
-
-  // encoder.finish();
-  return res.send();
 });
-
-app.get("/download/:filename/:username", (req, res) => {
-  let filename = req.params.filename;
-  let username = req.params.username;
-  gif_path = `${username}/extracted_gifs/${filename}.gif`;
-  let is_ready = false;
-  const intervalObj = setInterval(function () {
-    let file = gif_path;
-    let fileExists = fs.existsSync(file);
-    if (fileExists) {
-      is_ready = fs.statSync(gif_path).size > 100;
-    }
-    console.log("is exists:" + fileExists);
-    console.log("is ready:" + is_ready);
-
-    if (is_ready) {
-      clearInterval(intervalObj);
-      setTimeout(() => {
-        res.download(gif_path);
-        console.log("READY");
-      }, 4000);
-      // setTimeout(()=>{fs.unlinkSync(gif_path)},10000)
-    }
-  }, 2000);
-});
-
-function checkFilesReady(name, num_files) {
-  files = fs.readdirSync(name);
-  if (files.length != num_files) {
-    return false;
-  } else {
-    is_ready = true;
-    tot_size = 0;
-    for (let i = 0; i < num_files; i++) {
-      let stat = fs.statSync(name + "/" + files[i]);
-      tot_size += stat.size;
-      if (stat.size < 10) {
-        is_ready = false;
-      }
-    }
-    return is_ready;
-  }
-}
 
 exports.handler = serverlessExpress({ app });
