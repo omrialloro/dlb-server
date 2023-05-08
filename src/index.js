@@ -333,6 +333,14 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 app.post("/gif", checkJwt, async (req, res) => {
   var data = JSON.stringify(req.body);
 
+  const { frames, delay } = req.body;
+  const num_pixels = frames[0].length;
+  const pixel_size = 10;
+  const margin = 1;
+  const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+
+  const encoder = new GIFEncoder(size_frame, size_frame);
+
   var animationId = String(Date.now());
   console.log(
     `https://dlb-thumbnails.s3.eu-central-1.amazonaws.com/frames/${animationId}.json`
