@@ -229,8 +229,6 @@ GIFEncoder.prototype.addFrame = function (imageData) {
     this.image = imageData.getImageData(0, 0, this.width, this.height).data;
     console.log(this.image.reduce((a, b) => a + b, 0));
     console.log(this.image);
-
-    // console.log("FFFFFF");
   } else {
     this.image = imageData;
     console.log(this.image[786 * 4 - 1]);
