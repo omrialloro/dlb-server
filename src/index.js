@@ -340,7 +340,7 @@ app.post("/gif", checkJwt, async (req, res) => {
   const margin = 1;
   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
 
-  // const encoder = new GIFEncoder(size_frame, size_frame);
+  const encoder = new GIFEncoder(size_frame, size_frame);
 
   // encoder.start();
   // encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
