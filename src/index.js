@@ -323,7 +323,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     });
     res.end(Buffer.from("gifData"));
 
-    encoder.finish();
+    // encoder.finish();
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
