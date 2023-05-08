@@ -317,11 +317,11 @@ app.post("/gif", checkJwt, async (req, res) => {
 
     // const gifData = encoder.out.getData();
 
-    res.writeHead(200, {
-      "Content-Type": "image/gif",
-      "Content-Disposition": 'attachment; filename="mygif.gif"',
-    });
-    res.end(Buffer.from("gifData"));
+    // res.writeHead(200, {
+    //   "Content-Type": "image/gif",
+    //   "Content-Disposition": 'attachment; filename="mygif.gif"',
+    // });
+    // res.end(Buffer.from("gifData"));
 
     // encoder.finish();
   } catch (error) {
