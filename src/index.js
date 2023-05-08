@@ -334,25 +334,25 @@ app.post("/gif", checkJwt, async (req, res) => {
 app.post("/gif", checkJwt, async (req, res) => {
   var data = JSON.stringify(req.body);
 
-  const { frames, delay } = req.body;
-  const num_pixels = frames[0].length;
-  const pixel_size = 10;
-  const margin = 1;
-  const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+  // const { frames, delay } = req.body;
+  // const num_pixels = frames[0].length;
+  // const pixel_size = 10;
+  // const margin = 1;
+  // const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
 
-  const encoder = new GIFEncoder(size_frame, size_frame);
+  // const encoder = new GIFEncoder(size_frame, size_frame);
 
-  encoder.start();
-  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-  encoder.setDelay(delay); // frame delay in ms
-  encoder.setQuality(20); //
+  // encoder.start();
+  // encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+  // encoder.setDelay(delay); // frame delay in ms
+  // encoder.setQuality(20); //
 
-  for (let i = 0; i < frames.length; i++) {
-    encoder.addFrame(Parser(frames[i]));
-  }
+  // for (let i = 0; i < frames.length; i++) {
+  //   encoder.addFrame(Parser(frames[i]));
+  // }
 
-  const gifData = encoder.out.getData();
-  console.log(gifData);
+  // const gifData = encoder.out.getData();
+  // console.log(gifData);
 
   var animationId = String(Date.now());
   console.log(
