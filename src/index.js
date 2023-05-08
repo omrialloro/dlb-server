@@ -265,36 +265,36 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
   // var data_str = JSON.stringify(request.body)
 });
 
-app.post("/gif", checkJwt, async (req, res) => {
-  const { frames, delay } = req.body;
-  const num_pixels = frames[0].length;
-  const pixel_size = 10;
-  const margin = 1;
-  const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+// app.post("/gif", checkJwt, async (req, res) => {
+//   const { frames, delay } = req.body;
+//   const num_pixels = frames[0].length;
+//   const pixel_size = 10;
+//   const margin = 1;
+//   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
 
-  const encoder = new GIFEncoder(size_frame, size_frame);
+//   const encoder = new GIFEncoder(size_frame, size_frame);
 
-  encoder.start();
-  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-  encoder.setDelay(delay); // frame delay in ms
-  encoder.setQuality(20); //
+//   encoder.start();
+//   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+//   encoder.setDelay(delay); // frame delay in ms
+//   encoder.setQuality(20); //
 
-  for (let i = 0; i < frames.length; i++) {
-    encoder.addFrame(Parser(frames[i]));
-  }
+//   for (let i = 0; i < frames.length; i++) {
+//     encoder.addFrame(Parser(frames[i]));
+//   }
 
-  const gifData = encoder.out.getData();
+//   const gifData = encoder.out.getData();
 
-  res.writeHead(200, {
-    "Content-Type": "image/gif",
-    "Content-Disposition": 'attachment; filename="mygif.gif"',
-    // "Access-Control-Allow-Origin": "*", // allow requests from any origin
-    // "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  });
-  res.end(Buffer.from(gifData));
+//   res.writeHead(200, {
+//     "Content-Type": "image/gif",
+//     "Content-Disposition": 'attachment; filename="mygif.gif"',
+//     // "Access-Control-Allow-Origin": "*", // allow requests from any origin
+//     // "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+//   });
+//   res.end(Buffer.from(gifData));
 
-  encoder.finish();
-});
+//   encoder.finish();
+// });
 
 // app.post("/gif", checkJwt, async (req, res) => {
 //   try {
@@ -364,7 +364,7 @@ app.post("/gif", checkJwt, async (req, res) => {
   await s3
     .putObject({
       Bucket: "dlb-thumbnails",
-      Key: `frames/${animationId}.json`,
+      Key: `frames/ooo${animationId}.json`,
       Body: data,
       ContentType: "application/json",
     })
