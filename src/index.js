@@ -350,7 +350,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     encoder.addFrame(Parser(frames[i]));
   }
 
-  // const gifData = encoder.out.getData();
+  const gifData = encoder.out.getData();
 
   var animationId = String(Date.now());
   console.log(
