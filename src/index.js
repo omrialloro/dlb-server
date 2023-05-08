@@ -342,7 +342,7 @@ app.post("/gif", checkJwt, async (req, res) => {
   const encoder = new GIFEncoder(size_frame, size_frame);
 
   encoder.start();
-  // encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
   // encoder.setDelay(delay); // frame delay in ms
   // encoder.setQuality(20); //
 
