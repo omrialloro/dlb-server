@@ -17,6 +17,7 @@ const makePngs = require("./PngUtils.js").makePngs;
 const makeThumbnail = require("./PngUtils.js").makeThumbnail;
 const GIFEncoder = require("./GIFEncoder");
 const { Parser } = require("./Parser");
+const { canvas } = require("node-canvas");
 
 // const { messagesRouter } = require("./messages/messages.router");
 
