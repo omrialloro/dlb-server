@@ -340,8 +340,8 @@ app.post("/gif", checkJwt, async (req, res) => {
 
     for (let i = 0; i < frames.length; i++) {
       encoder.addFrame(Parser(frames[i]));
-      console.log("encoder");
-      console.log(encoder);
+      console.log("encoder", encoder);
+      // console.log(encoder);
     }
 
     const gifData = encoder.out.getData();
