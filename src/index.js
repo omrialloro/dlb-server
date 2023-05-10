@@ -19,25 +19,25 @@ const GIFEncoder = require("./GIFEncoder");
 const { Parser } = require("./Parser");
 // const { canvas } = require("canvas");
 
-const encoder = new GIFEncoder(100, 100);
+// const encoder = new GIFEncoder(100, 100);
 
-encoder.start();
-encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-encoder.setDelay(30); // frame delay in ms
-encoder.setQuality(20); //
+// encoder.start();
+// encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+// encoder.setDelay(30); // frame delay in ms
+// encoder.setQuality(20); //
 
-function createGrayFrame() {
-  const column = Array(36).fill("#523f3d");
-  const frame = Array(36).fill(column);
-  return frame;
-}
+// function createGrayFrame() {
+//   const column = Array(36).fill("#523f3d");
+//   const frame = Array(36).fill(column);
+//   return frame;
+// }
 
-encoder.addFrame(Parser(createGrayFrame()));
-encoder.addFrame(Parser(createGrayFrame()));
+// encoder.addFrame(Parser(createGrayFrame()));
+// encoder.addFrame(Parser(createGrayFrame()));
 
-const gifData = encoder.out.getData();
+// const gifData = encoder.out.getData();
 
-console.log(gifData);
+// console.log(gifData);
 
 // const { messagesRouter } = require("./messages/messages.router");
 
