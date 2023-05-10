@@ -34,6 +34,7 @@ function createGrayFrame() {
 
 encoder.addFrame(Parser(createGrayFrame()));
 encoder.addFrame(Parser(createGrayFrame()));
+console.log(encoder);
 
 // const { messagesRouter } = require("./messages/messages.router");
 
