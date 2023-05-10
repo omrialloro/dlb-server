@@ -24,7 +24,7 @@ function colorPixel(c, r, rgb, data, size_frame, margin, pixel_size) {
 }
 
 createFixedFrame = (size_frame, rgb) => {
-  const data = [];
+  var data = [];
   for (let i = 0; i < size_frame * size_frame; i++) {
     data.concat([rgb[0], rgb[1], rgb[2], rgb[3]]);
   }
