@@ -332,6 +332,11 @@ app.post("/gif", checkJwt, async (req, res) => {
     encoder.setDelay(delay); // frame delay in ms
     encoder.setQuality(20); //
     console.log(encoder);
+    console.log("encoder");
+    console.log("encoder");
+    console.log("encoder");
+    console.log("encoder");
+    console.log("encoder");
 
     for (let i = 0; i < frames.length; i++) {
       encoder.addFrame(Parser(frames[i]));
