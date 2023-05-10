@@ -26,7 +26,7 @@ function colorPixel(c, r, rgb, data, size_frame, margin, pixel_size) {
 createFixedFrame = (size_frame, rgb) => {
   const data = [];
   for (let i = 0; i < size_frame * size_frame; i++) {
-    data = data.concat([rgb[0], rgb[1], rgb[2], rgb[3]]);
+    data.concat([rgb[0], rgb[1], rgb[2], rgb[3]]);
   }
   return data;
 };
@@ -35,18 +35,15 @@ function Parser(frame) {
   const pixel_size = 10;
   const margin = 1;
   const num_pixels = frame.length;
-  console.log("num_pixels", num_pixels);
   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
   const data = createFixedFrame(size_frame, [0, 0, 0, 240]);
-  console.log("data");
-  console.log(data);
-
-  for (let i = 0; i < frame.length; i++) {
-    for (let j = 0; j < frame[i].length; j++) {
-      let rgb = hexToRgb(frame[j][i]);
-      colorPixel(i, j, rgb, data, size_frame, margin, pixel_size);
-    }
-  }
+  return data;
+  // for (let i = 0; i < frame.length; i++) {
+  //   for (let j = 0; j < frame[i].length; j++) {
+  //     let rgb = hexToRgb(frame[j][i]);
+  //     colorPixel(i, j, rgb, data, size_frame, margin, pixel_size);
+  //   }
+  // }
   return data;
 }
 module.exports.Parser = Parser;
