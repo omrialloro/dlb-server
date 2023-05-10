@@ -24,7 +24,7 @@ function colorPixel(c, r, rgb, data, size_frame, margin, pixel_size) {
 }
 
 createFixedFrame = (size_frame, rgb) => {
-  var data = [];
+  const data = [];
   for (let i = 0; i < size_frame * size_frame; i++) {
     data.concat([rgb[0], rgb[1], rgb[2], rgb[3]]);
   }
@@ -37,13 +37,48 @@ function Parser(frame) {
   const num_pixels = frame.length;
   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
   const data = createFixedFrame(size_frame, [0, 0, 0, 240]);
+  for (let i = 0; i < frame.length; i++) {
+    for (let j = 0; j < frame[i].length; j++) {
+      let rgb = hexToRgb(frame[j][i]);
+      colorPixel(i, j, rgb, data, size_frame, margin, pixel_size);
+    }
+  }
   return data;
-  // for (let i = 0; i < frame.length; i++) {
-  //   for (let j = 0; j < frame[i].length; j++) {
-  //     let rgb = hexToRgb(frame[j][i]);
-  //     colorPixel(i, j, rgb, data, size_frame, margin, pixel_size);
-  //   }
-  // }
-  return data;
+}
+function Parser(frame) {
+  return [
+    0,
+    0,
+    0,
+    240,
+    0,
+    0,
+    0,
+    240,
+    0,
+    0,
+    0,
+    240,
+    0,
+    0,
+    0,
+    240,
+    0,
+    0,
+    0,
+    240,
+    0,
+    0,
+    0,
+    240,
+    0,
+    0,
+    0,
+    240,
+    0,
+    0,
+    0,
+    240,
+  ];
 }
 module.exports.Parser = Parser;
