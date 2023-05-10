@@ -38,7 +38,8 @@ function Parser(frame) {
   console.log("num_pixels", num_pixels);
   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
   const data = createFixedFrame(size_frame, [0, 0, 0, 240]);
-  console.log("data", data);
+  console.log("data");
+  console.log(data);
 
   for (let i = 0; i < frame.length; i++) {
     for (let j = 0; j < frame[i].length; j++) {
