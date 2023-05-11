@@ -347,8 +347,8 @@ app.post("/gif", checkJwt, async (req, res) => {
     }
 
     const gifData = encoder.out.getData();
-    console.log(gifData);
-    console.log(Buffer.from(gifData));
+    // console.log(gifData);
+    // console.log(Buffer.from(gifData));
 
     res.writeHead(200, {
       "Content-Type": "image/gif",
