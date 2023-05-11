@@ -361,7 +361,7 @@ app.post("/gif", checkJwt, async (req, res) => {
       .putObject({
         Bucket: "dlb-thumbnails",
         Key: `gifs/ooo${animationId}.gif`,
-        Body: gifData,
+        Body: Buffer.from(gifData),
         ContentType: "image/gif",
       })
       .promise();
