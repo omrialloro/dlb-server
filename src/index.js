@@ -336,7 +336,6 @@ app.post("/gif", checkJwt, async (req, res) => {
     for (let i = 0; i < frames.length; i++) {
       try {
         encoder.addFrame(Parser(frames[i]));
-        console.log(Parser(frames[i]));
         console.log(encoder);
       } catch (error) {
         console.log(error);
