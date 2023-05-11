@@ -347,6 +347,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     }
 
     const gifData = encoder.out.getData();
+    console.log(gifData);
     console.log(Buffer.from(gifData));
 
     res.writeHead(200, {
@@ -354,6 +355,16 @@ app.post("/gif", checkJwt, async (req, res) => {
       "Content-Disposition": 'attachment; filename="mygif.gif"',
       "Access-Control-Allow-Origin": "*", // allow requests from any origin
     });
+    var animationId = String(Date.now());
+
+    await s3
+      .putObject({
+        Bucket: "dlb-thumbnails",
+        Key: `gifs/ooo${animationId}.gif`,
+        Body: gifData,
+        ContentType: "image/gif",
+      })
+      .promise();
 
     res.end(Buffer.from(gifData));
 
