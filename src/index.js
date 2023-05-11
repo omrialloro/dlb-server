@@ -360,14 +360,9 @@ app.post("/gif", checkJwt, async (req, res) => {
       })
       .promise();
 
-    gifStream = Buffer.from(gifData);
+    res.end(Buffer.from(gifData));
 
-    res.set("Content-Type", "image/gif");
-    res.set("Content-Disposition", 'attachment; filename="example.gif"');
-    gifStream.pipe(res);
-
-    // res.end(Buffer.from(gifData));
-    // encoder.finish();
+    encoder.finish();
   } catch (error) {
     console.error("DDDDDDDDDD");
     console.error(error);
