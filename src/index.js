@@ -362,13 +362,13 @@ app.post("/gif", checkJwt, async (req, res) => {
 
     res.end(Buffer.from(gifData));
 
-    encoder.finish();
+    // encoder.finish();
   } catch (error) {
     console.error("DDDDDDDDDD");
     console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
-  // return res.send();
+  return res.send();
 });
 
 // app.post("/gif", checkJwt, async (req, res) => {
