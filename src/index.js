@@ -349,7 +349,7 @@ app.post("/gif", checkJwt, async (req, res) => {
       "Content-Disposition": 'attachment; filename="mygif.gif"',
       "Access-Control-Allow-Origin": "*", // allow requests from any origin
     });
-    // var animationId = String(Date.now());
+    var animationId = String(Date.now());
 
     await s3
       .putObject({
