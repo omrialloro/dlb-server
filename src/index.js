@@ -368,7 +368,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
-  return res.send();
+  // return res.send();
 });
 
 // app.post("/gif", checkJwt, async (req, res) => {
