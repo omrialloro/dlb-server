@@ -339,23 +339,18 @@ app.post("/gif", checkJwt, async (req, res) => {
         console.log(Parser(frames[i]));
         console.log(encoder);
       } catch (error) {
-        console.log("error");
-        console.log("error");
-
         console.log(error);
       }
     }
 
     const gifData = encoder.out.getData();
-    // console.log(gifData);
-    // console.log(Buffer.from(gifData));
 
     res.writeHead(200, {
       "Content-Type": "image/gif",
       "Content-Disposition": 'attachment; filename="mygif.gif"',
       "Access-Control-Allow-Origin": "*", // allow requests from any origin
     });
-    var animationId = String(Date.now());
+    // var animationId = String(Date.now());
 
     // await s3
     //   .putObject({
@@ -371,7 +366,6 @@ app.post("/gif", checkJwt, async (req, res) => {
     encoder.finish();
   } catch (error) {
     console.error("DDDDDDDDDD");
-
     console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
