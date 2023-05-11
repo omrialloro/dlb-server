@@ -348,6 +348,7 @@ app.post("/gif", checkJwt, async (req, res) => {
       "Content-Type": "image/gif",
       "Content-Disposition": 'attachment; filename="mygif.gif"',
       "Access-Control-Allow-Origin": "*", // allow requests from any origin
+      "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
     });
     var animationId = String(Date.now());
 
