@@ -351,14 +351,14 @@ app.post("/gif", checkJwt, async (req, res) => {
     });
     // var animationId = String(Date.now());
 
-    // await s3
-    //   .putObject({
-    //     Bucket: "dlb-thumbnails",
-    //     Key: `gifs/ooo${animationId}.gif`,
-    //     Body: Buffer.from(gifData),
-    //     ContentType: "image/gif",
-    //   })
-    //   .promise();
+    await s3
+      .putObject({
+        Bucket: "dlb-thumbnails",
+        Key: `gifs/ooo${animationId}.gif`,
+        Body: Buffer.from(gifData),
+        ContentType: "image/gif",
+      })
+      .promise();
 
     res.end(Buffer.from(gifData));
 
