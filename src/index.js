@@ -323,7 +323,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     const num_pixels = frames[0].length;
     const pixel_size = 10;
     const margin = 1;
-    const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+    const size_frame = pixel_size * num_pixels + margin * (num_pixels + 1);
 
     const encoder = new GIFEncoder(size_frame, size_frame);
 
@@ -335,7 +335,7 @@ app.post("/gif", checkJwt, async (req, res) => {
 
     for (let i = 0; i < frames.length; i++) {
       try {
-        encoder.addFrame(Parser(frames[i]));
+        encoder.addFrame(Parser(frames[i], pixel_size, margin));
       } catch (error) {
         console.log(error);
       }

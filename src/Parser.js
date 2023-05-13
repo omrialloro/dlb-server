@@ -31,11 +31,9 @@ createFixedFrame = (size_frame, rgb) => {
   return data;
 };
 
-function Parser(frame) {
-  const pixel_size = 10;
-  const margin = 1;
+function Parser(frame, pixel_size, margin) {
   const num_pixels = frame.length;
-  const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+  const size_frame = pixel_size * num_pixels + margin * (num_pixels + 1);
   const data = createFixedFrame(size_frame, [0, 0, 0, 240]);
   for (let i = 0; i < frame.length; i++) {
     for (let j = 0; j < frame[i].length; j++) {
@@ -45,40 +43,5 @@ function Parser(frame) {
   }
   return data;
 }
-// function Parser(frame) {
-//   return [
-//     128,
-//     128,
-//     128,
-//     240,
-//     128,
-//     128,
-//     128,
-//     240,
-//     128,
-//     128,
-//     128,
-//     240,
-//     0,
-//     0,
-//     0,
-//     240,
-//     0,
-//     0,
-//     0,
-//     240,
-//     0,
-//     0,
-//     0,
-//     240,
-//     0,
-//     0,
-//     0,
-//     240,
-//     0,
-//     0,
-//     0,
-//     240,
-//   ];
-// }
+
 module.exports.Parser = Parser;
