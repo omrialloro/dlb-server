@@ -326,12 +326,11 @@ app.post("/gif", checkJwt, async (req, res) => {
     const size_frame = pixel_size * num_pixels + margin * (num_pixels + 1);
 
     const encoder = new GIFEncoder(size_frame, size_frame);
-
+    encoder.createReadStream().pipe(res);
     encoder.start();
     encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
     encoder.setDelay(delay); // frame delay in ms
     encoder.setQuality(20); //
-    console.log(encoder);
 
     for (let i = 0; i < frames.length; i++) {
       try {
@@ -340,28 +339,9 @@ app.post("/gif", checkJwt, async (req, res) => {
         console.log(error);
       }
     }
-
-    const gifData = encoder.out.getData();
-
-    // res.writeHead(200, {
-    //   "Content-Type": "image/gif",
-    //   "Content-Disposition": 'attachment; filename="mygif.gif"',
-    //   // "Access-Control-Allow-Origin": "*", // allow requests from any origin
-    // });
-    var animationId = String(Date.now());
-
-    await s3
-      .putObject({
-        Bucket: "dlb-thumbnails",
-        Key: `gifs/ooo${animationId}.gif`,
-        Body: Buffer.from(gifData),
-        ContentType: "image/gif",
-      })
-      .promise();
-
-    // res.end(Buffer.from(gifData));
-
-    // encoder.finish();
+    encoder.finish();
+    // .header("Content-Type", "image/gif")
+    // .header("Content-Disposition", 'attachment; filename="mygif.gif"');
   } catch (error) {
     console.error("DDDDDDDDDD");
     console.error(error);
