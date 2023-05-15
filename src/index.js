@@ -309,6 +309,7 @@ app.post("/gif", checkJwt, async (req, res) => {
       }
     }
     encoder.finish();
+    res.header("Content-Type", "image/gif");
     // .header("Content-Type", "image/gif")
     // .header("Content-Disposition", 'attachment; filename="mygif.gif"');
   } catch (error) {
