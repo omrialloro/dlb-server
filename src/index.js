@@ -1,6 +1,9 @@
 /**
  * Required External Modules
  */
+/**
+ * Required External Modules
+ */
 
 const express = require("express");
 const router = express.Router();
@@ -286,6 +289,37 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
   // var data_str = JSON.stringify(request.body)
 });
 
+// app.post("/gif", checkJwt, async (req, res) => {
+//   const { frames, delay } = req.body;
+//   const num_pixels = frames[0].length;
+//   const pixel_size = 10;
+//   const margin = 1;
+//   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+
+//   const encoder = new GIFEncoder(size_frame, size_frame);
+
+//   encoder.start();
+//   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+//   encoder.setDelay(delay); // frame delay in ms
+//   encoder.setQuality(20); //
+
+//   for (let i = 0; i < frames.length; i++) {
+//     encoder.addFrame(Parser(frames[i]));
+//   }
+
+//   const gifData = encoder.out.getData();
+
+//   res.writeHead(200, {
+//     "Content-Type": "image/gif",
+//     "Content-Disposition": 'attachment; filename="mygif.gif"',
+//     // "Access-Control-Allow-Origin": "*", // allow requests from any origin
+//     // "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+//   });
+//   res.end(Buffer.from(gifData));
+
+//   encoder.finish();
+// });
+
 app.post("/gif", checkJwt, async (req, res) => {
   try {
     const { frames, delay } = req.body;
@@ -295,11 +329,12 @@ app.post("/gif", checkJwt, async (req, res) => {
     const size_frame = pixel_size * num_pixels + margin * (num_pixels + 1);
 
     const encoder = new GIFEncoder(size_frame, size_frame);
-    encoder.createReadStream().pipe(res);
+
     encoder.start();
     encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
     encoder.setDelay(delay); // frame delay in ms
     encoder.setQuality(20); //
+    console.log(encoder);
 
     for (let i = 0; i < frames.length; i++) {
       try {
@@ -308,14 +343,76 @@ app.post("/gif", checkJwt, async (req, res) => {
         console.log(error);
       }
     }
-    res.header("Content-Type", "image/gif");
-    res.header("Content-Disposition", 'attachment; filename="mygif.gif"');
-    encoder.finish();
+
+    const gifData = encoder.out.getData();
+
+    // res.writeHead(200, {
+    //   "Content-Type": "image/gif",
+    //   "Content-Disposition": 'attachment; filename="mygif.gif"',
+    //   // "Access-Control-Allow-Origin": "*", // allow requests from any origin
+    // });
+    var animationId = String(Date.now());
+
+    await s3
+      .putObject({
+        Bucket: "dlb-thumbnails",
+        Key: `gifs/ooo${animationId}.gif`,
+        Body: Buffer.from(gifData),
+        ContentType: "image/gif",
+      })
+      .promise();
+
+    // res.end(Buffer.from(gifData));
+
+    // encoder.finish();
   } catch (error) {
     console.error("DDDDDDDDDD");
     console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
+  console.log(animationId);
+  return res.send(animationId);
 });
+
+// app.post("/gif", checkJwt, async (req, res) => {
+//   var data = JSON.stringify(req.body);
+
+//   const { frames, delay } = req.body;
+//   const num_pixels = frames[0].length;
+//   const pixel_size = 10;
+//   const margin = 1;
+//   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
+
+//   const encoder = new GIFEncoder(size_frame, size_frame);
+
+//   encoder.start();
+//   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+//   encoder.setDelay(delay); // frame delay in ms
+//   encoder.setQuality(20); //
+
+//   // for (let i = 0; i < frames.length; i++) {
+//   //   encoder.addFrame(Parser(frames[i]));
+//   // }
+
+//   // const gifData = encoder.out.getData();
+//   // console.log(gifData);
+
+//   var animationId = String(Date.now());
+//   console.log(
+//     `https://dlb-thumbnails.s3.eu-central-1.amazonaws.com/frames/${animationId}.json`
+//   );
+
+//   console.log("DDDD");
+
+//   await s3
+//     .putObject({
+//       Bucket: "dlb-thumbnails",
+//       Key: `frames/ooo${animationId}.json`,
+//       Body: data,
+//       ContentType: "application/json",
+//     })
+//     .promise();
+//   return res.send();
+// });
 
 exports.handler = serverlessExpress({ app });
