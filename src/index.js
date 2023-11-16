@@ -20,34 +20,10 @@ const makePngs = require("./PngUtils.js").makePngs;
 const makeThumbnail = require("./PngUtils.js").makeThumbnail;
 const GIFEncoder = require("./GIFEncoder");
 const { Parser } = require("./Parser");
-// const { canvas } = require("canvas");
-
-// const encoder = new GIFEncoder(100, 100);
-
-// encoder.start();
-// encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-// encoder.setDelay(30); // frame delay in ms
-// encoder.setQuality(20); //
-
-// function createGrayFrame() {
-//   const column = Array(36).fill("#523f3d");
-//   const frame = Array(36).fill(column);
-//   return frame;
-// }
-
-// encoder.addFrame(Parser(createGrayFrame()));
-// encoder.addFrame(Parser(createGrayFrame()));
-
-// const gifData = encoder.out.getData();
-
-// console.log(gifData);
-
-// const { messagesRouter } = require("./messages/messages.router");
 
 const { checkJwt } = require("./authz/check-jwt");
 AWS.config.update({ region: "eu-central-1" });
 
-// const dynamodb = new AWS.DynamoDB.DocumentClient();
 var dynamodb = new AWS.DynamoDB({ apiVersion: "2012-08-10" });
 var documentClient = new AWS.DynamoDB.DocumentClient();
 
@@ -96,8 +72,7 @@ app.get("/check", checkJwt, function (req, res) {
 });
 
 app.get("/animationsList", checkJwt, function (req, res) {
-  console.log("FFF");
-  const type = req.params.type;
+  const type = req.query.type;
   const isRow = type === "row";
   var params = {
     IndexName: "userID-index",
@@ -114,7 +89,7 @@ app.get("/animationsList", checkJwt, function (req, res) {
     KeyConditionExpression: "userID = :u",
     ProjectionExpression: "animationId,animationName",
     FilterExpression:
-      "isDeleted = :d and saved=:s" + (isRow ? "and formatType=:t" : ""),
+      "isDeleted = :d and saved=:s" + (isRow ? " and formatType=:t" : ""),
     TableName: dynamodbTableName,
   };
 
@@ -285,40 +260,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
     Bucket: "dlb-thumbnails",
     Key: `frames/${animationId}.json`,
   }).promise();
-
-  // var data_str = JSON.stringify(request.body)
 });
-
-// app.post("/gif", checkJwt, async (req, res) => {
-//   const { frames, delay } = req.body;
-//   const num_pixels = frames[0].length;
-//   const pixel_size = 10;
-//   const margin = 1;
-//   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
-
-//   const encoder = new GIFEncoder(size_frame, size_frame);
-
-//   encoder.start();
-//   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-//   encoder.setDelay(delay); // frame delay in ms
-//   encoder.setQuality(20); //
-
-//   for (let i = 0; i < frames.length; i++) {
-//     encoder.addFrame(Parser(frames[i]));
-//   }
-
-//   const gifData = encoder.out.getData();
-
-//   res.writeHead(200, {
-//     "Content-Type": "image/gif",
-//     "Content-Disposition": 'attachment; filename="mygif.gif"',
-//     // "Access-Control-Allow-Origin": "*", // allow requests from any origin
-//     // "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-//   });
-//   res.end(Buffer.from(gifData));
-
-//   encoder.finish();
-// });
 
 app.post("/gif", checkJwt, async (req, res) => {
   try {
@@ -345,12 +287,6 @@ app.post("/gif", checkJwt, async (req, res) => {
     }
 
     const gifData = encoder.out.getData();
-
-    // res.writeHead(200, {
-    //   "Content-Type": "image/gif",
-    //   "Content-Disposition": 'attachment; filename="mygif.gif"',
-    //   // "Access-Control-Allow-Origin": "*", // allow requests from any origin
-    // });
     var animationId = String(Date.now());
 
     await s3
@@ -361,58 +297,11 @@ app.post("/gif", checkJwt, async (req, res) => {
         ContentType: "image/gif",
       })
       .promise();
-
-    // res.end(Buffer.from(gifData));
-
-    // encoder.finish();
   } catch (error) {
-    console.error("DDDDDDDDDD");
-    console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
   console.log(animationId);
   return res.send(animationId);
 });
-
-// app.post("/gif", checkJwt, async (req, res) => {
-//   var data = JSON.stringify(req.body);
-
-//   const { frames, delay } = req.body;
-//   const num_pixels = frames[0].length;
-//   const pixel_size = 10;
-//   const margin = 1;
-//   const size_frame = pixel_size * num_pixels + 2 * margin * (num_pixels + 1);
-
-//   const encoder = new GIFEncoder(size_frame, size_frame);
-
-//   encoder.start();
-//   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-//   encoder.setDelay(delay); // frame delay in ms
-//   encoder.setQuality(20); //
-
-//   // for (let i = 0; i < frames.length; i++) {
-//   //   encoder.addFrame(Parser(frames[i]));
-//   // }
-
-//   // const gifData = encoder.out.getData();
-//   // console.log(gifData);
-
-//   var animationId = String(Date.now());
-//   console.log(
-//     `https://dlb-thumbnails.s3.eu-central-1.amazonaws.com/frames/${animationId}.json`
-//   );
-
-//   console.log("DDDD");
-
-//   await s3
-//     .putObject({
-//       Bucket: "dlb-thumbnails",
-//       Key: `frames/ooo${animationId}.json`,
-//       Body: data,
-//       ContentType: "application/json",
-//     })
-//     .promise();
-//   return res.send();
-// });
 
 exports.handler = serverlessExpress({ app });
