@@ -282,7 +282,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     // const width = 360;
     // const height = 360;
 
-    const encoder = new GIFEncoder(width, height);
+    const encoder = new GIFEncoder(360, 360);
 
     encoder.start();
     encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
