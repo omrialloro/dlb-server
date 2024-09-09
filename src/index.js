@@ -281,7 +281,12 @@ app.post("/gif", checkJwt, async (req, res) => {
     encoder.setQuality(20); //
     console.log(encoder);
 
-    const pixelData = { radius: 1, opacity: 1, pw: 0.5, ph: 0.5 };
+    const pixelData = {
+      radius: pixelConfig.br,
+      opacity: pixelConfig.op,
+      pw: pixelConfig.pw,
+      ph: pixelConfig.ph,
+    };
 
     for (let i = 0; i < frames.length; i++) {
       try {
