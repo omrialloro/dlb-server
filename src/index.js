@@ -21,6 +21,8 @@ const makeThumbnail = require("./PngUtils.js").makeThumbnail;
 const GIFEncoder = require("./GIFEncoder");
 const { Parser } = require("./Parser");
 
+const { FrameParser } = require("./FrameParser");
+
 const { checkJwt } = require("./authz/check-jwt");
 AWS.config.update({ region: "eu-central-1" });
 
@@ -270,7 +272,8 @@ app.post("/gif", checkJwt, async (req, res) => {
     const margin = 0;
     const size_frame = pixel_size * num_pixels + margin * (num_pixels + 1);
 
-    const encoder = new GIFEncoder(size_frame, size_frame);
+    // const encoder = new GIFEncoder(size_frame, size_frame);
+    const encoder = new GIFEncoder(200, 400);
 
     encoder.start();
     encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
@@ -278,9 +281,12 @@ app.post("/gif", checkJwt, async (req, res) => {
     encoder.setQuality(20); //
     console.log(encoder);
 
+    const pixelData = { radius: 1, opacity: 1, pw: 0.5, ph: 0.5 };
+
     for (let i = 0; i < frames.length; i++) {
       try {
-        encoder.addFrame(Parser(frames[i], pixel_size, margin));
+        // encoder.addFrame(Parser(frames[i], pixel_size, margin));
+        encoder.addFrame(FrameParser(frames[i], 200, 400, pixelData));
       } catch (error) {
         console.log(error);
       }
