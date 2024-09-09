@@ -266,7 +266,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 
 app.post("/gif", checkJwt, async (req, res) => {
   try {
-    const { frames, delay, width, height, pixelConfig } = req.body;
+    const { frames, delay, pixelConfig } = req.body;
     const num_pixels = frames[0].length;
     const pixel_size = 10;
     const margin = 0;
@@ -275,12 +275,12 @@ app.post("/gif", checkJwt, async (req, res) => {
     const l_x = frames[0].length;
     const l_y = frames[0][0].length;
 
-    width = width - (width % l_x);
-    height = height - (height % l_y);
+    // width = width - (width % l_x);
+    // height = height - (height % l_y);
 
     // const encoder = new GIFEncoder(size_frame, size_frame);
-    // const width = 360;
-    // const height = 360;
+    width = 360;
+    height = 360;
 
     const encoder = new GIFEncoder(360, 360);
 
