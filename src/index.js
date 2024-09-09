@@ -273,7 +273,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     const size_frame = pixel_size * num_pixels + margin * (num_pixels + 1);
 
     // const encoder = new GIFEncoder(size_frame, size_frame);
-    const encoder = new GIFEncoder(800, 800);
+    const encoder = new GIFEncoder(200, 200);
 
     encoder.start();
     encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
@@ -281,11 +281,17 @@ app.post("/gif", checkJwt, async (req, res) => {
     encoder.setQuality(20); //
     console.log(encoder);
 
+    // const pixelData = {
+    //   radius: pixelConfig.br,
+    //   opacity: pixelConfig.op,
+    //   pw: pixelConfig.pw,
+    //   ph: pixelConfig.ph,
+    // };
     const pixelData = {
-      radius: pixelConfig.br,
-      opacity: pixelConfig.op,
-      pw: pixelConfig.pw,
-      ph: pixelConfig.ph,
+      radius: 0,
+      opacity: 1,
+      pw: 1,
+      ph: 1,
     };
 
     for (let i = 0; i < frames.length; i++) {
