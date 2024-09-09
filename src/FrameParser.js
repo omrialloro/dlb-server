@@ -155,7 +155,7 @@ function testFrameParser(filePath) {
   encoder.setDelay(delay); // frame delay in ms
   encoder.setQuality(20); //
 
-  const pixelData = { radius: 1, opacity: 0.6, pw: 2.3, ph: 2.3 };
+  const pixelData = { radius: 0, opacity: 1, pw: 1, ph: 1 };
 
   for (let i = 0; i < frames.length; i++) {
     try {
@@ -166,9 +166,9 @@ function testFrameParser(filePath) {
   }
   encoder.finish();
 }
-// const GIFEncoder = require("./GIFEncoder");
-// const fs = require("fs");
+const GIFEncoder = require("./GIFEncoder");
+const fs = require("fs");
 
-// testFrameParser("1695927309992.json");
+testFrameParser("1675355321382.json");
 
 module.exports.FrameParser = FrameParser;
