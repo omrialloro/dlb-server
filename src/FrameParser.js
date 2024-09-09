@@ -166,9 +166,9 @@ function testFrameParser(filePath) {
   }
   encoder.finish();
 }
-const GIFEncoder = require("./GIFEncoder");
-const fs = require("fs");
+// const GIFEncoder = require("./GIFEncoder");
+// const fs = require("fs");
 
-testFrameParser("1675355321382.json");
+// testFrameParser("1675355321382.json");
 
 module.exports.FrameParser = FrameParser;
