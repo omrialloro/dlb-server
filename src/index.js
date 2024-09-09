@@ -266,7 +266,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
 
 app.post("/gif", checkJwt, async (req, res) => {
   try {
-    const { frames, delay, pixelConfig } = req.body;
+    const { frames, delay, width, height, pixelConfig } = req.body;
     const num_pixels = frames[0].length;
     const pixel_size = 10;
     const margin = 0;
@@ -275,14 +275,12 @@ app.post("/gif", checkJwt, async (req, res) => {
     const l_x = frames[0].length;
     const l_y = frames[0][0].length;
 
-    // width = width - (width % l_x);
-    // height = height - (height % l_y);
+    const width_ = width - (width % l_x);
+    const height_ = height - (height % l_y);
 
     // const encoder = new GIFEncoder(size_frame, size_frame);
-    width = 360;
-    height = 360;
 
-    const encoder = new GIFEncoder(360, 360);
+    const encoder = new GIFEncoder(width_, height_);
 
     encoder.start();
     encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
@@ -300,7 +298,7 @@ app.post("/gif", checkJwt, async (req, res) => {
     for (let i = 0; i < frames.length; i++) {
       try {
         // encoder.addFrame(Parser(frames[i], pixel_size, margin));
-        encoder.addFrame(FrameParser(frames[i], width, height, pixelData));
+        encoder.addFrame(FrameParser(frames[i], width_, height_, pixelData));
       } catch (error) {
         console.log(error);
       }
