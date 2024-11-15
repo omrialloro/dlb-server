@@ -80,7 +80,7 @@ app.get("/animationsList", checkJwt, function (req, res) {
     IndexName: "userID-index",
     ExpressionAttributeValues: {
       ":u": { S: req.user.email },
-      // ":d": { BOOL: false },
+      ":d": { BOOL: false },
       ":s": { BOOL: true },
       ...(isRow
         ? {
@@ -91,9 +91,7 @@ app.get("/animationsList", checkJwt, function (req, res) {
     KeyConditionExpression: "userID = :u",
     ProjectionExpression: "animationId,animationName",
     FilterExpression:
-      // "isDeleted = :d and saved=:s" + (isRow ? " and formatType=:t" : ""),
-      "saved=:s" + (isRow ? " and formatType=:t" : ""),
-
+      "isDeleted = :d and saved=:s" + (isRow ? " and formatType=:t" : ""),
     TableName: dynamodbTableName,
   };
 
