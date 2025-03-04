@@ -326,9 +326,9 @@ const ytdl = require("ytdl-core");
 const multer = require("multer");
 const path = require("path");
 
-const BUCKET_NAME = process.env.S3_BUCKET_NAME;
+// const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
-app.post("/download", async (req, res) => {
+app.post("/download", checkJwt, async (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).json({ error: "URL is required" });
 
