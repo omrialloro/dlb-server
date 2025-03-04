@@ -324,49 +324,54 @@ app.post("/gif", checkJwt, async (req, res) => {
 
 const ytdl = require("ytdl-core");
 const multer = require("multer");
-const path = require("path");
-
-// const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
 app.post("/download", checkJwt, async (req, res) => {
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ error: "URL is required" });
-
-  const filename = `audio-${Date.now()}.mp3`;
-  const filePath = `./${filename}`;
-
-  // Use yt-dlp to download the audio
-  const ytProcess = spawn("yt-dlp", [
-    "-x",
-    "--audio-format",
-    "mp3",
-    "-o",
-    filePath,
-    url,
-  ]);
-
-  ytProcess.on("close", async (code) => {
-    if (code !== 0) {
-      return res.status(500).json({ error: "Failed to download audio" });
+  try {
+    const { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ message: "YouTube URL is required" });
     }
 
-    // Upload to S3
-    const fileStream = fs.createReadStream(filePath);
-    const params = {
-      Bucket: "music-for-animatin",
-      Key: filename,
-      Body: fileStream,
-      ContentType: "audio/mpeg",
-    };
+    const fileName = `music/${Date.now()}.mp3`;
+    const uploadStream = s3
+      .upload({
+        Bucket: "music-for-animatin",
+        Key: fileName,
+        ContentType: "audio/mpeg",
+        ACL: "public-read", // Make it publicly accessible
+        Body: null, // Placeholder, Body will be streamed later
+      })
+      .promise();
 
-    s3.upload(params, (err, data) => {
-      fs.unlinkSync(filePath); // Delete local file after upload
-      if (err) {
-        return res.status(500).json({ error: "Failed to upload to S3" });
+    console.log(`Downloading from: ${url}`);
+
+    const ytProcess = spawn("yt-dlp", [
+      "-x",
+      "--audio-format",
+      "mp3",
+      "-o",
+      "-", // Output to stdout (streaming)
+      url,
+    ]);
+
+    ytProcess.stdout.pipe(uploadStream.Body); // Pipe YouTube stream directly to S3
+
+    ytProcess.on("close", async (code) => {
+      if (code === 0) {
+        const fileUrl = `https://${"music-for-animatin"}.s3.${"eu-central-1"}.amazonaws.com/${fileName}`;
+        return res.status(200).json({ message: "File uploaded", url: fileUrl });
+      } else {
+        return res.status(500).json({ message: "yt-dlp failed" });
       }
-      res.json({ message: "Upload successful", url: data.Location });
     });
-  });
+
+    ytProcess.stderr.on("data", (data) =>
+      console.error(`yt-dlp error: ${data}`)
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 exports.handler = serverlessExpress({ app });
