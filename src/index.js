@@ -322,49 +322,51 @@ app.post("/gif", checkJwt, async (req, res) => {
   return res.send(animationId);
 });
 
-// const ytdl = require("ytdl-core");
-// const multer = require("multer");
-// const path = require("path");
+const ytdl = require("ytdl-core");
+const multer = require("multer");
+const path = require("path");
 
-// const storage = multer.diskStorage({
-//   destination: "./uploads",
-//   filename: (req, file, cb) => {
-//     cb(null, `${Date.now()}-${file.originalname}`);
-//   },
-// });
-// const upload = multer({ storage });
+const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
-// // Ensure the "uploads" directory exists
-// if (!fs.existsSync("./uploads")) {
-//   fs.mkdirSync("./uploads");
-// }
+app.post("/download", async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: "URL is required" });
 
-// // Endpoint to receive YouTube URL and download audio
-// app.post("/download", async (req, res) => {
-//   const { youtubeUrl } = req.body;
+  const filename = `audio-${Date.now()}.mp3`;
+  const filePath = `./${filename}`;
 
-//   if (!youtubeUrl || !ytdl.validateURL(youtubeUrl)) {
-//     return res.status(400).json({ error: "Invalid YouTube URL" });
-//   }
+  // Use yt-dlp to download the audio
+  const ytProcess = spawn("yt-dlp", [
+    "-x",
+    "--audio-format",
+    "mp3",
+    "-o",
+    filePath,
+    url,
+  ]);
 
-//   try {
-//     const info = await ytdl.getInfo(youtubeUrl);
-//     const title = info.videoDetails.title.replace(/[^\w\s]/gi, ""); // Remove special chars
-//     const filePath = `./uploads/${title}.mp3`;
+  ytProcess.on("close", async (code) => {
+    if (code !== 0) {
+      return res.status(500).json({ error: "Failed to download audio" });
+    }
 
-//     const stream = ytdl(youtubeUrl, { quality: "highestaudio" }).pipe(
-//       fs.createWriteStream(filePath)
-//     );
+    // Upload to S3
+    const fileStream = fs.createReadStream(filePath);
+    const params = {
+      Bucket: "music-for-animatin",
+      Key: filename,
+      Body: fileStream,
+      ContentType: "audio/mpeg",
+    };
 
-//     stream.on("finish", () => {
-//       res.json({ message: "Download complete", file: `/uploads/${title}.mp3` });
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Error downloading audio" });
-//   }
-// });
-
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+    s3.upload(params, (err, data) => {
+      fs.unlinkSync(filePath); // Delete local file after upload
+      if (err) {
+        return res.status(500).json({ error: "Failed to upload to S3" });
+      }
+      res.json({ message: "Upload successful", url: data.Location });
+    });
+  });
+});
 
 exports.handler = serverlessExpress({ app });
