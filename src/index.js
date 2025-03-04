@@ -322,4 +322,49 @@ app.post("/gif", checkJwt, async (req, res) => {
   return res.send(animationId);
 });
 
+const ytdl = require("ytdl-core");
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: "./uploads",
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+const upload = multer({ storage });
+
+// Ensure the "uploads" directory exists
+if (!fs.existsSync("./uploads")) {
+  fs.mkdirSync("./uploads");
+}
+
+// Endpoint to receive YouTube URL and download audio
+app.post("/download", async (req, res) => {
+  const { youtubeUrl } = req.body;
+
+  if (!youtubeUrl || !ytdl.validateURL(youtubeUrl)) {
+    return res.status(400).json({ error: "Invalid YouTube URL" });
+  }
+
+  try {
+    const info = await ytdl.getInfo(youtubeUrl);
+    const title = info.videoDetails.title.replace(/[^\w\s]/gi, ""); // Remove special chars
+    const filePath = `./uploads/${title}.mp3`;
+
+    const stream = ytdl(youtubeUrl, { quality: "highestaudio" }).pipe(
+      fs.createWriteStream(filePath)
+    );
+
+    stream.on("finish", () => {
+      res.json({ message: "Download complete", file: `/uploads/${title}.mp3` });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error downloading audio" });
+  }
+});
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 exports.handler = serverlessExpress({ app });
