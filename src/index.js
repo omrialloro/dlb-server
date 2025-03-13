@@ -5,6 +5,8 @@
  * Required External Modules
  */
 
+const http = require("https");
+
 const express = require("express");
 const router = express.Router();
 require("dotenv").config();
@@ -324,55 +326,44 @@ app.post("/gif", checkJwt, async (req, res) => {
 
 const BUCKET_NAME = process.env.S3_BUCKET_NAME; // Set in .env
 
-app.use(cors());
 app.use(express.json());
 
-const handleYoutubeUpload = (url, res) => {
-  const fileName = `music-${Date.now()}.mp3`;
+app.get("/downloadYoutubeMp3", (req, res) => {
+  const videoId = req.query.id; // Get videoId from query parameters
+  if (!videoId) {
+    return res.status(400).json({ message: "Missing video ID" });
+  }
 
-  console.log(`Downloading audio from: ${url}`);
+  const options = {
+    method: "GET",
+    hostname: "youtube-mp36.p.rapidapi.com",
+    port: null,
+    path: `/dl?id=${videoId}`,
+    headers: {
+      "x-rapidapi-key": "a46c05b9eemsh7415a239bc76990p177dd9jsn494f53bee41a",
+      "x-rapidapi-host": "youtube-mp36.p.rapidapi.com",
+    },
+  };
 
-  // Spawn yt-dlp process
-  const ytProcess = spawn("yt-dlp", [
-    "-x",
-    "--audio-format",
-    "mp3",
-    "-o",
-    "-",
-    url,
-  ]);
+  const request = http.request(options, (response) => {
+    const chunks = [];
 
-  const uploadStream = s3
-    .upload({
-      Bucket: "music-for-animatin",
-      Key: fileName,
-      ContentType: "audio/mpeg",
-      // ACL: "public-read",
-      Body: ytProcess.stdout, // Streaming directly from yt-dlp to S3
-    })
-    .promise();
-
-  uploadStream
-    .then(() => {
-      const region = process.env.AWS_REGION || "us-east-1";
-      const fileUrl = `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${fileName}`;
-      console.log(`Upload successful: ${fileUrl}`);
-      res.status(200).json({ message: "File uploaded", url: fileUrl });
-    })
-    .catch((err) => {
-      console.error("S3 Upload Error:", err);
-      res.status(500).json({ message: "S3 upload failed" });
+    response.on("data", (chunk) => {
+      chunks.push(chunk);
     });
 
-  ytProcess.stderr.on("data", (data) => console.error(`yt-dlp error: ${data}`));
-};
+    response.on("end", () => {
+      const body = Buffer.concat(chunks).toString();
+      res.json({ message: "Download link received", data: JSON.parse(body) });
+    });
+  });
 
-app.post("/download", (req, res) => {
-  const { url } = req.body;
-  if (!url) {
-    return res.status(400).json({ message: "No URL provided" });
-  }
-  handleYoutubeUpload(url, res);
+  request.on("error", (error) => {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching download link" });
+  });
+
+  request.end();
 });
 
 exports.handler = serverlessExpress({ app });
