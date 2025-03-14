@@ -237,13 +237,10 @@ app.post("/markAsDeleted", checkJwt, (request, response) => {
 
     await documentClient.update(params).promise();
   };
-  for (let i = 0; i < data.length; i++) {
-    markAsDeleted(data[i]);
-  }
+  markAsDeleted(data["animationId"]);
 });
 
 app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
-  console.log(request.body);
   let animationId = String(request.body["animationId"]);
   console.log(animationId);
   var fileItem = {
