@@ -468,7 +468,7 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       Body: fileStream,
       ContentType: req.file.mimetype,
       ContentEncoding: "binary", // 🛠 Ensure binary-safe upload
-      ContentDisposition: "attachment",
+      // ContentDisposition: "attachment",
       CacheControl: "no-cache",
     };
 
