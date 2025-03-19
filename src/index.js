@@ -437,13 +437,21 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    console.log("VERRRRYFYYY");
+    console.log("File received:", req.file.originalname);
+    console.log("File Buffer Size:", req.file.buffer.length);
 
-    // Ensure the file is an MP3 based on extension (more reliable in Lambda)
+    // Validate MP3 Format
+    if (!req.file.mimetype.includes("audio/mpeg")) {
+      return res
+        .status(400)
+        .json({ error: "Invalid file format. Must be MP3." });
+    }
 
-    // Convert Buffer to Stream
+    // Convert Buffer to Stream (Ensure correct streaming)
     const fileStream = Readable.from(req.file.buffer);
+    fileStream.on("error", (err) => console.error("Stream Error:", err));
 
+    // Generate a unique file name
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
     const params = {
@@ -451,6 +459,8 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       Key: fileName,
       Body: fileStream,
       ContentType: req.file.mimetype,
+      ContentDisposition: "attachment",
+      CacheControl: "no-cache",
     };
 
     console.log("Uploading to S3...");
