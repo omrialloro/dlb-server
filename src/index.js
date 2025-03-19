@@ -409,7 +409,7 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     }
 
     const fileContent = req.file.buffer;
-    console.log(fileContent);
+    console.log(fileContent.length);
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
     const params = {
