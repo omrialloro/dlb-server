@@ -440,20 +440,23 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     console.log("File received:", req.file.originalname);
     console.log("File Buffer Size:", req.file.buffer.length);
 
-    console.log(
-      "First 20 Bytes of File:",
-      req.file.buffer.slice(0, 20).toString("hex")
-    );
+    // Check file format using the first bytes
+    const firstBytes = req.file.buffer.slice(0, 10).toString("hex");
+    console.log("First 10 Bytes:", firstBytes);
 
-    // Validate MP3 Format
-    if (!req.file.mimetype.includes("audio/mpeg")) {
+    // Ensure the uploaded file is an MP3 (MPEG frame or ID3 header)
+    if (!firstBytes.startsWith("fffb") && !firstBytes.startsWith("494433")) {
       return res
         .status(400)
-        .json({ error: "Invalid file format. Must be MP3." });
+        .json({ error: "Invalid MP3 file: Corrupted or wrong format." });
     }
 
-    // Convert Buffer to Stream (Ensure correct streaming)
-    const fileStream = Readable.from(req.file.buffer);
+    // Ensure binary-safe buffer
+    const fileBuffer = Buffer.from(req.file.buffer);
+    console.log("Verified Binary Buffer Length:", fileBuffer.byteLength);
+
+    // Convert Buffer to Stream
+    const fileStream = Readable.from(fileBuffer);
     fileStream.on("error", (err) => console.error("Stream Error:", err));
 
     // Generate a unique file name
@@ -464,6 +467,7 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       Key: fileName,
       Body: fileStream,
       ContentType: req.file.mimetype,
+      ContentEncoding: "binary", // 🛠 Ensure binary-safe upload
       ContentDisposition: "attachment",
       CacheControl: "no-cache",
     };
