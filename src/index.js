@@ -36,7 +36,17 @@ const dynamodbTableName = "animations";
 const s3 = new AWS.S3();
 
 const app = express();
-
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: "uploads/", // Ensure this folder exists or create it
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname); // Unique filename
+  },
+});
+const upload = multer({
+  storage: multer.memoryStorage(), // Store file in memory before upload
+  limits: { fileSize: 10 * 1024 * 1024 }, // Optional: Limit to 10MB
+});
 var morgan = require("morgan");
 const { log } = require("console");
 app.use(morgan("dev"));
@@ -74,6 +84,35 @@ app.use(require("./auth"));
 app.get("/check", checkJwt, function (req, res) {
   res.send("ok");
 });
+
+// async function itemExists(itemId) {
+//   const params = {
+//     TableName: dynamodbTableName,
+//     Key: { animationId: { S: itemId } }, // Assuming 'animationId' is a string attribute
+//   };
+
+//   return new Promise((resolve, reject) => {
+//     dynamodb.getItem(params, function (err, data) {
+//       if (err) {
+//         console.log("Error", err);
+//         reject(err); // Reject the promise on error
+//       } else {
+//         console.log("Success");
+//         resolve(data.Item || null); // Resolve with item data or null
+//       }
+//     });
+//   });
+// }
+
+// itemExists("1675378164221")
+//   .then((data) => {
+//     if (data) {
+//       console.log("Item exists:", data);
+//     } else {
+//       console.log("Item not found.");
+//     }
+//   })
+//   .catch((err) => console.error("Failed to fetch item:", err));
 
 app.get("/animationsList", checkJwt, function (req, res) {
   const type = req.query.type;
@@ -361,6 +400,31 @@ app.get("/downloadYoutubeMp3", (req, res) => {
   });
 
   request.end();
+});
+
+app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    const fileContent = req.file.buffer;
+    const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+
+    const params = {
+      Bucket: "music-for-animatin",
+      Key: fileName,
+      Body: fileContent,
+      ContentType: req.file.mimetype,
+    };
+
+    const result = await s3.upload(params).promise();
+
+    res.json({ fileUrl: result.Location });
+  } catch (error) {
+    console.error("S3 Upload Error:", error);
+    res.status(500).json({ error: "Failed to upload file to S3" });
+  }
 });
 
 exports.handler = serverlessExpress({ app });
