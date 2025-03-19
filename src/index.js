@@ -440,22 +440,22 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     console.log("File received:", req.file.originalname);
     console.log("File Buffer Size:", req.file.buffer.length);
 
-    // Check file format using the first bytes
+    // 🚀 **Verify Binary Data Before Upload**
     const firstBytes = req.file.buffer.slice(0, 10).toString("hex");
     console.log("First 10 Bytes:", firstBytes);
 
-    // Ensure the uploaded file is an MP3 (MPEG frame or ID3 header)
     // if (!firstBytes.startsWith("fffb") && !firstBytes.startsWith("494433")) {
     //   return res
     //     .status(400)
     //     .json({ error: "Invalid MP3 file: Corrupted or wrong format." });
     // }
 
-    // Ensure binary-safe buffer
+    // 🚀 **Force a New Buffer to Prevent Encoding Issues**
     const fileBuffer = Buffer.from(req.file.buffer);
+
     console.log("Verified Binary Buffer Length:", fileBuffer.byteLength);
 
-    // Convert Buffer to Stream
+    // 🚀 **Use a Stream for Upload (Prevents Corruption)**
     const fileStream = Readable.from(fileBuffer);
     fileStream.on("error", (err) => console.error("Stream Error:", err));
 
@@ -466,8 +466,8 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       Bucket: "music-for-animatin",
       Key: fileName,
       Body: fileStream,
-      ContentType: req.file.mimetype,
-      ContentEncoding: "binary", // 🛠 Ensure binary-safe upload
+      ContentType: "audio/mpeg", // 🚀 Force Correct MP3 MIME Type
+      ContentEncoding: "binary", // 🚀 Prevent Encoding Modifications
       ContentDisposition: "attachment",
       CacheControl: "no-cache",
     };
