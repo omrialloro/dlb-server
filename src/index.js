@@ -402,17 +402,43 @@ app.get("/downloadYoutubeMp3", (req, res) => {
   request.end();
 });
 
+// app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded." });
+//     }
+
+//     const fileContent = req.file.buffer;
+//     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+
+//     const params = {
+//       Bucket: "music-for-animatin",
+//       Key: fileName,
+//       Body: fileContent,
+//       ContentType: req.file.mimetype,
+//     };
+
+//     const result = await s3.upload(params).promise();
+
+//     res.json({ fileUrl: result.Location });
+//   } catch (error) {
+//     console.error("S3 Upload Error:", error);
+//     res.status(500).json({ error: "Failed to upload file to S3" });
+//   }
+// });
+
 app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const buffer = req.file.buffer.from(mp3Data, "binary");
-    const fileContent = buffer;
+    // Ensure the file is an MP3
+    if (req.file.mimetype !== "audio/mpeg") {
+      return res.status(400).json({ error: "The file is not in MP3 format." });
+    }
 
-    // const fileContent = req.file.buffer;
-    console.log(fileContent.length);
+    const fileContent = req.file.buffer;
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
     const params = {
