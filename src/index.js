@@ -438,9 +438,6 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     }
 
     // Ensure the file is an MP3 based on extension (more reliable in Lambda)
-    if (path.extname(req.file.originalname).toLowerCase() !== ".mp3") {
-      return res.status(400).json({ error: "The file is not in MP3 format." });
-    }
 
     console.log("File received:", req.file.originalname);
     console.log("File Buffer Size:", req.file.buffer.length);
