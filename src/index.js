@@ -440,34 +440,33 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     console.log("File received:", req.file.originalname);
     console.log("File Buffer Size:", req.file.buffer.length);
 
-    // 🚀 **Verify Binary Data Before Upload**
-    const firstBytes = req.file.buffer.slice(0, 10).toString("hex");
-    console.log("First 10 Bytes:", firstBytes);
+    // 🚀 Step 1: Save Locally in Lambda
+    const tempFilePath = `/tmp/test_upload.mp3`;
+    fs.writeFileSync(tempFilePath, req.file.buffer);
+    console.log("Saved file locally in Lambda:", tempFilePath);
 
-    // if (!firstBytes.startsWith("fffb") && !firstBytes.startsWith("494433")) {
-    //   return res
-    //     .status(400)
-    //     .json({ error: "Invalid MP3 file: Corrupted or wrong format." });
-    // }
+    // Read back the file and compare first 20 bytes
+    const testRead = fs.readFileSync(tempFilePath);
+    console.log(
+      "First 20 Bytes FROM DISK:",
+      testRead.slice(0, 20).toString("hex")
+    );
 
-    // 🚀 **Force a New Buffer to Prevent Encoding Issues**
+    // 🚀 Step 2: Upload to S3
     const fileBuffer = Buffer.from(req.file.buffer);
+    console.log(
+      "First 20 Bytes BEFORE Upload:",
+      fileBuffer.slice(0, 20).toString("hex")
+    );
 
-    console.log("Verified Binary Buffer Length:", fileBuffer.byteLength);
-
-    // 🚀 **Use a Stream for Upload (Prevents Corruption)**
-    const fileStream = Readable.from(fileBuffer);
-    fileStream.on("error", (err) => console.error("Stream Error:", err));
-
-    // Generate a unique file name
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
     const params = {
       Bucket: "music-for-animatin",
       Key: fileName,
-      Body: fileStream,
-      ContentType: "audio/mpeg", // 🚀 Force Correct MP3 MIME Type
-      ContentEncoding: "binary", // 🚀 Prevent Encoding Modifications
+      Body: fileBuffer, // 🚀 Direct buffer upload
+      ContentType: "audio/mpeg",
+      ContentEncoding: "binary",
       ContentDisposition: "attachment",
       CacheControl: "no-cache",
     };
