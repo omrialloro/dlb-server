@@ -437,6 +437,8 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
+    console.log("VERRRRYFYYY");
+
     // Ensure the file is an MP3 based on extension (more reliable in Lambda)
 
     // Convert Buffer to Stream
