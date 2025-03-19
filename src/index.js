@@ -408,7 +408,10 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const fileContent = req.file.buffer;
+    const buffer = req.file.buffer.from(mp3Data, "binary");
+    const fileContent = buffer;
+
+    // const fileContent = req.file.buffer;
     console.log(fileContent.length);
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
