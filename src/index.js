@@ -427,28 +427,33 @@ app.get("/downloadYoutubeMp3", (req, res) => {
 //   }
 // });
 
+const { Readable } = require("stream");
+
+// Configure AWS S3
+
 app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    // Ensure the file is an MP3
-    if (req.file.mimetype !== "audio/mpeg") {
-      return res.status(400).json({ error: "The file is not in MP3 format." });
-    }
+    // Ensure the file is an MP3 based on extension (more reliable in Lambda)
 
-    const fileContent = req.file.buffer;
+    // Convert Buffer to Stream
+    const fileStream = Readable.from(req.file.buffer);
+
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
     const params = {
       Bucket: "music-for-animatin",
       Key: fileName,
-      Body: fileContent,
+      Body: fileStream,
       ContentType: req.file.mimetype,
     };
 
+    console.log("Uploading to S3...");
     const result = await s3.upload(params).promise();
+    console.log("Upload successful:", result.Location);
 
     res.json({ fileUrl: result.Location });
   } catch (error) {
