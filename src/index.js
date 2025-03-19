@@ -445,11 +445,11 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     console.log("First 10 Bytes:", firstBytes);
 
     // Ensure the uploaded file is an MP3 (MPEG frame or ID3 header)
-    if (!firstBytes.startsWith("fffb") && !firstBytes.startsWith("494433")) {
-      return res
-        .status(400)
-        .json({ error: "Invalid MP3 file: Corrupted or wrong format." });
-    }
+    // if (!firstBytes.startsWith("fffb") && !firstBytes.startsWith("494433")) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "Invalid MP3 file: Corrupted or wrong format." });
+    // }
 
     // Ensure binary-safe buffer
     const fileBuffer = Buffer.from(req.file.buffer);
@@ -468,7 +468,7 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       Body: fileStream,
       ContentType: req.file.mimetype,
       ContentEncoding: "binary", // 🛠 Ensure binary-safe upload
-      // ContentDisposition: "attachment",
+      ContentDisposition: "attachment",
       CacheControl: "no-cache",
     };
 
