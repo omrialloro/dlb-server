@@ -428,21 +428,33 @@ app.get("/downloadYoutubeMp3", (req, res) => {
 // });
 
 const { Readable } = require("stream");
-
-// Configure AWS S3
+const multiparty = require("multiparty"); // ✅ Correctly handles form-data
 
 app.post("/uploadFile", checkJwt, async (req, res) => {
   try {
     console.log("Receiving file...");
 
-    let chunks = [];
-    req.on("data", (chunk) => chunks.push(chunk));
+    // 🚀 Step 1: Parse multipart form-data correctly
+    const form = new multiparty.Form();
 
-    req.on("end", async () => {
-      const fileBuffer = Buffer.concat(chunks);
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        console.error("Error parsing form-data:", err);
+        return res.status(400).json({ error: "Invalid file upload" });
+      }
+
+      if (!files.file || files.file.length === 0) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = files.file[0]; // Get the uploaded file
+      console.log("File received:", file.originalFilename);
+
+      // 🚀 Step 2: Read the file buffer
+      const fileBuffer = fs.readFileSync(file.path);
       console.log("Received File Buffer Size:", fileBuffer.length);
 
-      // 🚀 Step 1: Save to /tmp/ (Check if it’s corrupt here)
+      // 🚀 Step 3: Save to /tmp/ (Check if it’s corrupt here)
       const tempFilePath = `/tmp/test_upload.mp3`;
       fs.writeFileSync(tempFilePath, fileBuffer);
       console.log("Saved file locally in Lambda:", tempFilePath);
@@ -454,8 +466,8 @@ app.post("/uploadFile", checkJwt, async (req, res) => {
         testRead.slice(0, 20).toString("hex")
       );
 
-      // 🚀 Step 2: Upload to S3
-      const fileName = `uploads/${Date.now()}_uploaded.mp3`;
+      // 🚀 Step 4: Upload to S3
+      const fileName = `uploads/${Date.now()}_${file.originalFilename}`;
 
       const params = {
         Bucket: "music-for-animatin",
@@ -478,6 +490,7 @@ app.post("/uploadFile", checkJwt, async (req, res) => {
     res.status(500).json({ error: "Failed to upload file to S3" });
   }
 });
+// Configure AWS S3
 
 // app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
 //   try {
