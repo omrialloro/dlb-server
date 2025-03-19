@@ -431,51 +431,48 @@ const { Readable } = require("stream");
 
 // Configure AWS S3
 
-app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
+app.post("/uploadFile", checkJwt, async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded." });
-    }
+    console.log("Receiving file...");
 
-    console.log("File received:", req.file.originalname);
-    console.log("File Buffer Size:", req.file.buffer.length);
+    let chunks = [];
+    req.on("data", (chunk) => chunks.push(chunk));
 
-    // 🚀 Step 1: Save Locally in Lambda
-    const tempFilePath = `/tmp/test_upload.mp3`;
-    fs.writeFileSync(tempFilePath, req.file.buffer);
-    console.log("Saved file locally in Lambda:", tempFilePath);
+    req.on("end", async () => {
+      const fileBuffer = Buffer.concat(chunks);
+      console.log("Received File Buffer Size:", fileBuffer.length);
 
-    // Read back the file and compare first 20 bytes
-    const testRead = fs.readFileSync(tempFilePath);
-    console.log(
-      "First 20 Bytes FROM DISK:",
-      testRead.slice(0, 20).toString("hex")
-    );
+      // 🚀 Step 1: Save to /tmp/ (Check if it’s corrupt here)
+      const tempFilePath = `/tmp/test_upload.mp3`;
+      fs.writeFileSync(tempFilePath, fileBuffer);
+      console.log("Saved file locally in Lambda:", tempFilePath);
 
-    // 🚀 Step 2: Upload to S3
-    const fileBuffer = Buffer.from(req.file.buffer);
-    console.log(
-      "First 20 Bytes BEFORE Upload:",
-      fileBuffer.slice(0, 20).toString("hex")
-    );
+      // Read back from disk and compare
+      const testRead = fs.readFileSync(tempFilePath);
+      console.log(
+        "First 20 Bytes FROM DISK:",
+        testRead.slice(0, 20).toString("hex")
+      );
 
-    const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+      // 🚀 Step 2: Upload to S3
+      const fileName = `uploads/${Date.now()}_uploaded.mp3`;
 
-    const params = {
-      Bucket: "music-for-animatin",
-      Key: fileName,
-      Body: fileBuffer, // 🚀 Direct buffer upload
-      ContentType: "audio/mpeg",
-      ContentEncoding: "binary",
-      ContentDisposition: "attachment",
-      CacheControl: "no-cache",
-    };
+      const params = {
+        Bucket: "music-for-animatin",
+        Key: fileName,
+        Body: fileBuffer, // Upload raw buffer
+        ContentType: "audio/mpeg",
+        ContentEncoding: "binary",
+        ContentDisposition: "attachment",
+        CacheControl: "no-cache",
+      };
 
-    console.log("Uploading to S3...");
-    const result = await s3.upload(params).promise();
-    console.log("Upload successful:", result.Location);
+      console.log("Uploading to S3...");
+      const result = await s3.upload(params).promise();
+      console.log("Upload successful:", result.Location);
 
-    res.json({ fileUrl: result.Location });
+      res.json({ fileUrl: result.Location });
+    });
   } catch (error) {
     console.error("S3 Upload Error:", error);
     res.status(500).json({ error: "Failed to upload file to S3" });
