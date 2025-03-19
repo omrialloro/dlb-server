@@ -437,14 +437,29 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    // Ensure the file is an MP3 based on extension (more reliable in Lambda)
-
     console.log("File received:", req.file.originalname);
     console.log("File Buffer Size:", req.file.buffer.length);
 
-    // Convert Buffer to Stream
-    const fileStream = Readable.from(req.file.buffer);
+    // Check file format using the first bytes
+    const firstBytes = req.file.buffer.slice(0, 10).toString("hex");
+    console.log("First 10 Bytes:", firstBytes);
 
+    // Ensure the uploaded file is an MP3 (MPEG frame or ID3 header)
+    if (!firstBytes.startsWith("fffb") && !firstBytes.startsWith("494433")) {
+      return res
+        .status(400)
+        .json({ error: "Invalid MP3 file: Corrupted or wrong format." });
+    }
+
+    // Ensure binary-safe buffer
+    const fileBuffer = Buffer.from(req.file.buffer);
+    console.log("Verified Binary Buffer Length:", fileBuffer.byteLength);
+
+    // Convert Buffer to Stream
+    const fileStream = Readable.from(fileBuffer);
+    fileStream.on("error", (err) => console.error("Stream Error:", err));
+
+    // Generate a unique file name
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
     const params = {
@@ -452,6 +467,9 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       Key: fileName,
       Body: fileStream,
       ContentType: req.file.mimetype,
+      ContentEncoding: "binary", // 🛠 Ensure binary-safe upload
+      ContentDisposition: "attachment",
+      CacheControl: "no-cache",
     };
 
     console.log("Uploading to S3...");
@@ -464,5 +482,39 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     res.status(500).json({ error: "Failed to upload file to S3" });
   }
 });
+
+// app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded." });
+//     }
+
+//     // Ensure the file is an MP3 based on extension (more reliable in Lambda)
+
+//     console.log("File received:", req.file.originalname);
+//     console.log("File Buffer Size:", req.file.buffer.length);
+
+//     // Convert Buffer to Stream
+//     const fileStream = Readable.from(req.file.buffer);
+
+//     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+
+//     const params = {
+//       Bucket: "music-for-animatin",
+//       Key: fileName,
+//       Body: fileStream,
+//       ContentType: req.file.mimetype,
+//     };
+
+//     console.log("Uploading to S3...");
+//     const result = await s3.upload(params).promise();
+//     console.log("Upload successful:", result.Location);
+
+//     res.json({ fileUrl: result.Location });
+//   } catch (error) {
+//     console.error("S3 Upload Error:", error);
+//     res.status(500).json({ error: "Failed to upload file to S3" });
+//   }
+// });
 
 exports.handler = serverlessExpress({ app });
