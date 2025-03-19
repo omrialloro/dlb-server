@@ -440,6 +440,11 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     console.log("File received:", req.file.originalname);
     console.log("File Buffer Size:", req.file.buffer.length);
 
+    console.log(
+      "First 20 Bytes of File:",
+      req.file.buffer.slice(0, 20).toString("hex")
+    );
+
     // Validate MP3 Format
     if (!req.file.mimetype.includes("audio/mpeg")) {
       return res
