@@ -455,6 +455,11 @@ app.post("/uploadFile", checkJwt, async (req, res) => {
       console.log("Received File Buffer Size:", fileBuffer.length);
 
       // 🚀 Step 3: Save to /tmp/ (Check if it’s corrupt here)
+      console.log(
+        "First 20 Bytes BEFORE SAVING TO /tmp/:",
+        fileBuffer.slice(0, 20).toString("hex")
+      );
+
       const tempFilePath = `/tmp/test_upload.mp3`;
       fs.writeFileSync(tempFilePath, fileBuffer);
       console.log("Saved file locally in Lambda:", tempFilePath);
