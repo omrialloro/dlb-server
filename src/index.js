@@ -435,17 +435,21 @@ const multiparty = require("multiparty"); // ✅ Correctly handles form-data
 app.post("/uploadFile", checkJwt, (req, res) => {
   console.log("Receiving file...");
 
-  const busboy = Busboy({ headers: req.headers });
+  const busboy = Busboy({
+    headers: req.headers,
+    highWaterMark: 2 * 1024 * 1024, // Prevents Lambda truncation
+    limits: { fileSize: 100 * 1024 * 1024 }, // Restrict file size
+  });
 
   let fileBuffer = Buffer.alloc(0);
   let fileName = "";
 
-  busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
-    console.log("File received:", filename);
-    fileName = filename;
+  busboy.on("file", (fieldname, file, info) => {
+    fileName = info.filename;
+    console.log("File received:", fileName);
 
     file.on("data", (data) => {
-      fileBuffer = Buffer.concat([fileBuffer, data]);
+      fileBuffer = Buffer.concat([fileBuffer, Buffer.from(data)]);
     });
 
     file.on("end", async () => {
