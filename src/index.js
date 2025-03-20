@@ -434,7 +434,7 @@ app.post("/uploadFile", checkJwt, async (req, res) => {
   try {
     console.log("Receiving file...");
 
-    // 🚀 Step 1: Parse multipart form-data correctly
+    // 🚀 Parse multipart form-data
     const form = new multiparty.Form();
 
     form.parse(req, async (err, fields, files) => {
@@ -450,16 +450,15 @@ app.post("/uploadFile", checkJwt, async (req, res) => {
       const file = files.file[0]; // Get the uploaded file
       console.log("File received:", file.originalFilename);
 
-      // 🚀 Step 2: Read the file buffer
-      const fileBuffer = fs.readFileSync(file.path);
+      // 🚀 Step 1: Read file as raw binary buffer (FORCE BINARY MODE)
+      const fileBuffer = Buffer.from(fs.readFileSync(file.path), "binary");
       console.log("Received File Buffer Size:", fileBuffer.length);
-
-      // 🚀 Step 3: Save to /tmp/ (Check if it’s corrupt here)
       console.log(
         "First 20 Bytes BEFORE SAVING TO /tmp/:",
         fileBuffer.slice(0, 20).toString("hex")
       );
 
+      // 🚀 Step 2: Save to /tmp/ and verify integrity
       const tempFilePath = `/tmp/test_upload.mp3`;
       fs.writeFileSync(tempFilePath, fileBuffer);
       console.log("Saved file locally in Lambda:", tempFilePath);
@@ -471,7 +470,7 @@ app.post("/uploadFile", checkJwt, async (req, res) => {
         testRead.slice(0, 20).toString("hex")
       );
 
-      // 🚀 Step 4: Upload to S3
+      // 🚀 Step 3: Upload to S3
       const fileName = `uploads/${Date.now()}_${file.originalFilename}`;
 
       const params = {
