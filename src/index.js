@@ -435,7 +435,7 @@ const multiparty = require("multiparty"); // ✅ Correctly handles form-data
 app.post("/uploadFile", checkJwt, (req, res) => {
   console.log("Receiving file...");
 
-  const busboy = new Busboy({ headers: req.headers });
+  const busboy = Busboy({ headers: req.headers });
 
   let fileBuffer = Buffer.alloc(0);
   let fileName = "";
