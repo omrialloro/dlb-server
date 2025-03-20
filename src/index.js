@@ -431,9 +431,8 @@ const { Readable } = require("stream");
 const Busboy = require("busboy");
 
 const multiparty = require("multiparty"); // ✅ Correctly handles form-data
-
 app.post("/uploadFile", checkJwt, (req, res) => {
-  console.log("Receiving file...");
+  console.log("Receiving filssssse...");
 
   const busboy = Busboy({
     headers: req.headers,
@@ -449,7 +448,7 @@ app.post("/uploadFile", checkJwt, (req, res) => {
     console.log("File received:", fileName);
 
     file.on("data", (data) => {
-      fileBuffer = Buffer.concat([fileBuffer, Buffer.from(data)]);
+      fileBuffer = Buffer.concat([fileBuffer, data]); // 🛠️ Use raw binary data
     });
 
     file.on("end", async () => {
