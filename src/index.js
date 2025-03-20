@@ -430,52 +430,45 @@ app.get("/downloadYoutubeMp3", (req, res) => {
 const { Readable } = require("stream");
 const multiparty = require("multiparty"); // ✅ Correctly handles form-data
 
-app.post("/uploadFile", checkJwt, async (req, res) => {
-  try {
-    console.log("Receiving file...");
+app.post("/uploadFile", checkJwt, (req, res) => {
+  console.log("Receiving file...");
 
-    // 🚀 Parse multipart form-data
-    const form = new multiparty.Form();
+  const busboy = new Busboy({ headers: req.headers });
 
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        console.error("Error parsing form-data:", err);
-        return res.status(400).json({ error: "Invalid file upload" });
-      }
+  let fileBuffer = Buffer.alloc(0);
+  let fileName = "";
 
-      if (!files.file || files.file.length === 0) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
+  busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
+    console.log("File received:", filename);
+    fileName = filename;
 
-      const file = files.file[0]; // Get the uploaded file
-      console.log("File received:", file.originalFilename);
+    file.on("data", (data) => {
+      fileBuffer = Buffer.concat([fileBuffer, data]);
+    });
 
-      // 🚀 Step 1: Read file as raw binary buffer (FORCE BINARY MODE)
-      const fileBuffer = Buffer.from(fs.readFileSync(file.path), "binary");
-      console.log("Received File Buffer Size:", fileBuffer.length);
+    file.on("end", async () => {
+      console.log("File Buffer Size:", fileBuffer.length);
       console.log(
         "First 20 Bytes BEFORE SAVING TO /tmp/:",
         fileBuffer.slice(0, 20).toString("hex")
       );
 
-      // 🚀 Step 2: Save to /tmp/ and verify integrity
-      const tempFilePath = `/tmp/test_upload.mp3`;
+      // 🚀 Step 1: Save to /tmp/
+      const tempFilePath = `/tmp/${fileName}`;
       fs.writeFileSync(tempFilePath, fileBuffer);
       console.log("Saved file locally in Lambda:", tempFilePath);
 
-      // Read back from disk and compare
+      // Read back and check integrity
       const testRead = fs.readFileSync(tempFilePath);
       console.log(
         "First 20 Bytes FROM DISK:",
         testRead.slice(0, 20).toString("hex")
       );
 
-      // 🚀 Step 3: Upload to S3
-      const fileName = `uploads/${Date.now()}_${file.originalFilename}`;
-
+      // 🚀 Step 2: Upload to S3
       const params = {
         Bucket: "music-for-animatin",
-        Key: fileName,
+        Key: `uploads/${Date.now()}_${fileName}`,
         Body: fileBuffer, // Upload raw buffer
         ContentType: "audio/mpeg",
         ContentEncoding: "binary",
@@ -489,10 +482,13 @@ app.post("/uploadFile", checkJwt, async (req, res) => {
 
       res.json({ fileUrl: result.Location });
     });
-  } catch (error) {
-    console.error("S3 Upload Error:", error);
-    res.status(500).json({ error: "Failed to upload file to S3" });
-  }
+  });
+
+  busboy.on("finish", () => {
+    console.log("Busboy finished processing.");
+  });
+
+  req.pipe(busboy);
 });
 // Configure AWS S3
 
