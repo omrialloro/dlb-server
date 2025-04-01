@@ -402,28 +402,53 @@ app.get("/downloadYoutubeMp3", (req, res) => {
   request.end();
 });
 
+// app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded." });
+//     }
+
+//     const fileContent = req.file.buffer;
+//     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+
+//     const params = {
+//       Bucket: "music-for-animatin",
+//       Key: fileName,
+//       Body: Buffer.from(fileContent, "base64"),
+//       ContentType: req.file.mimetype,
+//     };
+
+//     console.log("fileContent");
+
+//     console.log(fileContent);
+//     console.log("fileContenvvvvvt");
+
+//     console.log(Buffer.from(fileContent, "base64"));
+
+//     const result = await s3.upload(params).promise();
+
+//     res.json({ fileUrl: result.Location });
+//   } catch (error) {
+//     console.error("S3 Upload Error:", error);
+//     res.status(500).json({ error: "Failed to upload file to S3" });
+//   }
+// });
+
 app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const fileContent = req.file.buffer;
+    const fileContent = req.file.buffer; // This is already binary!
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
     const params = {
       Bucket: "music-for-animatin",
       Key: fileName,
-      Body: Buffer.from(fileContent, "base64"),
+      Body: fileContent, // ✅ Directly use buffer here
       ContentType: req.file.mimetype,
     };
-
-    console.log("fileContent");
-
-    console.log(fileContent);
-    console.log("fileContenvvvvvt");
-
-    console.log(Buffer.from(fileContent, "base64"));
 
     const result = await s3.upload(params).promise();
 
