@@ -450,6 +450,8 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       ContentType: req.file.mimetype,
     };
 
+    console.log(fileContent);
+
     const result = await s3.upload(params).promise();
 
     res.json({ fileUrl: result.Location });
