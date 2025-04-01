@@ -414,11 +414,16 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     const params = {
       Bucket: "music-for-animatin",
       Key: fileName,
-      Body: fileContent,
+      Body: Buffer.from(fileContent, "base64"),
       ContentType: req.file.mimetype,
     };
 
+    console.log("fileContent");
+
     console.log(fileContent);
+    console.log("fileContenvvvvvt");
+
+    console.log(Buffer.from(fileContent, "base64"));
 
     const result = await s3.upload(params).promise();
 
