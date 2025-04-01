@@ -402,99 +402,102 @@ app.get("/downloadYoutubeMp3", (req, res) => {
   request.end();
 });
 
-// app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: "No file uploaded." });
-//     }
+app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
 
-//     const fileContent = req.file.buffer;
-//     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+    const fileContent = req.file.buffer;
+    const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
 
-//     const params = {
-//       Bucket: "music-for-animatin",
-//       Key: fileName,
-//       Body: fileContent,
-//       ContentType: req.file.mimetype,
-//     };
+    const params = {
+      Bucket: "music-for-animatin",
+      Key: fileName,
+      Body: fileContent,
+      ContentType: req.file.mimetype,
+    };
 
-//     const result = await s3.upload(params).promise();
+    console.log(fileContent);
 
-//     res.json({ fileUrl: result.Location });
-//   } catch (error) {
-//     console.error("S3 Upload Error:", error);
-//     res.status(500).json({ error: "Failed to upload file to S3" });
-//   }
+    const result = await s3.upload(params).promise();
+
+    res.json({ fileUrl: result.Location });
+  } catch (error) {
+    console.error("S3 Upload Error:", error);
+    res.status(500).json({ error: "Failed to upload file to S3" });
+  }
+});
+
+// const { Readable } = require("stream");
+// const Busboy = require("busboy");
+
+// const multiparty = require("multiparty"); // ✅ Correctly handles form-data
+// app.post("/uploadFile", checkJwt, (req, res) => {
+//   console.log("Receiving filssssse...");
+
+//   const busboy = Busboy({
+//     headers: req.headers,
+//     highWaterMark: 2 * 1024 * 1024, // Prevents Lambda truncation
+//     limits: { fileSize: 100 * 1024 * 1024 }, // Restrict file size
+//   });
+
+//   let fileBuffer = Buffer.alloc(0);
+//   let fileName = "";
+
+//   busboy.on("file", (fieldname, file, info) => {
+//     fileName = info.filename;
+//     console.log("File received:", fileName);
+
+//     file.on("data", (data) => {
+//       fileBuffer = Buffer.concat([fileBuffer, data]); // 🛠️ Use raw binary data
+//     });
+
+//     file.on("end", async () => {
+//       console.log("File Buffer Size:", fileBuffer.length);
+//       console.log(
+//         "First 20 Bytes BEFORE SAVING TO /tmp/:",
+//         fileBuffer.slice(0, 20).toString("hex")
+//       );
+
+//       // 🚀 Step 1: Save to /tmp/
+//       const tempFilePath = `/tmp/${fileName}`;
+//       fs.writeFileSync(tempFilePath, fileBuffer);
+//       console.log("Saved file locally in Lambda:", tempFilePath);
+
+//       // Read back and check integrity
+//       const testRead = fs.readFileSync(tempFilePath);
+//       console.log(
+//         "First 20 Bytes FROM DISK:",
+//         testRead.slice(0, 20).toString("hex")
+//       );
+
+//       // 🚀 Step 2: Upload to S3
+//       const params = {
+//         Bucket: "music-for-animatin",
+//         Key: `uploads/${Date.now()}_${fileName}`,
+//         Body: fileBuffer, // Upload raw buffer
+//         ContentType: "audio/mpeg",
+//         ContentEncoding: "binary",
+//         ContentDisposition: "attachment",
+//         CacheControl: "no-cache",
+//       };
+
+//       console.log("Uploading to S3...");
+//       const result = await s3.upload(params).promise();
+//       console.log("Upload successful:", result.Location);
+
+//       res.json({ fileUrl: result.Location });
+//     });
+//   });
+
+//   busboy.on("finish", () => {
+//     console.log("Busboy finished processing.");
+//   });
+
+//   req.pipe(busboy);
 // });
 
-const { Readable } = require("stream");
-const Busboy = require("busboy");
-
-const multiparty = require("multiparty"); // ✅ Correctly handles form-data
-app.post("/uploadFile", checkJwt, (req, res) => {
-  console.log("Receiving filssssse...");
-
-  const busboy = Busboy({
-    headers: req.headers,
-    highWaterMark: 2 * 1024 * 1024, // Prevents Lambda truncation
-    limits: { fileSize: 100 * 1024 * 1024 }, // Restrict file size
-  });
-
-  let fileBuffer = Buffer.alloc(0);
-  let fileName = "";
-
-  busboy.on("file", (fieldname, file, info) => {
-    fileName = info.filename;
-    console.log("File received:", fileName);
-
-    file.on("data", (data) => {
-      fileBuffer = Buffer.concat([fileBuffer, data]); // 🛠️ Use raw binary data
-    });
-
-    file.on("end", async () => {
-      console.log("File Buffer Size:", fileBuffer.length);
-      console.log(
-        "First 20 Bytes BEFORE SAVING TO /tmp/:",
-        fileBuffer.slice(0, 20).toString("hex")
-      );
-
-      // 🚀 Step 1: Save to /tmp/
-      const tempFilePath = `/tmp/${fileName}`;
-      fs.writeFileSync(tempFilePath, fileBuffer);
-      console.log("Saved file locally in Lambda:", tempFilePath);
-
-      // Read back and check integrity
-      const testRead = fs.readFileSync(tempFilePath);
-      console.log(
-        "First 20 Bytes FROM DISK:",
-        testRead.slice(0, 20).toString("hex")
-      );
-
-      // 🚀 Step 2: Upload to S3
-      const params = {
-        Bucket: "music-for-animatin",
-        Key: `uploads/${Date.now()}_${fileName}`,
-        Body: fileBuffer, // Upload raw buffer
-        ContentType: "audio/mpeg",
-        ContentEncoding: "binary",
-        ContentDisposition: "attachment",
-        CacheControl: "no-cache",
-      };
-
-      console.log("Uploading to S3...");
-      const result = await s3.upload(params).promise();
-      console.log("Upload successful:", result.Location);
-
-      res.json({ fileUrl: result.Location });
-    });
-  });
-
-  busboy.on("finish", () => {
-    console.log("Busboy finished processing.");
-  });
-
-  req.pipe(busboy);
-});
 // Configure AWS S3
 
 // app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
