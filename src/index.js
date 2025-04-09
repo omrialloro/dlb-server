@@ -6,6 +6,7 @@
  */
 
 const http = require("https");
+const serverless = require("serverless-http");
 
 const express = require("express");
 const router = express.Router();
@@ -566,4 +567,8 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
 //   }
 // });
 
-exports.handler = serverlessExpress({ app });
+// exports.handler = serverlessExpress({ app });
+
+exports.handler = serverless(app, {
+  binary: ["audio/mpeg", "audio/*"],
+});

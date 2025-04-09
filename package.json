@@ -27,6 +27,7 @@
     "multer": "^1.4.5-lts.1",
     "multiparty": "^4.2.3",
     "pngjs": "^6.0.0",
+    "serverless-http": "^3.2.0",
     "yt-dlp-exec": "^1.0.2",
     "ytdl-core": "^4.11.5"
   },
