@@ -2,11 +2,12 @@ name: Deploy code lambda
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
 
 env:
-  LAMBDA_NAME: dlb-service           # set this to the name of the container in the
-                                               # containerDefinitions section of your task definition
+  LAMBDA_NAME:
+    dlb-service # set this to the name of the container in the
+    # containerDefinitions section of your task definition
 
 jobs:
   deploy:
@@ -15,19 +16,19 @@ jobs:
     environment: production
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ vars.AWS_REGION }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-    - name: npm install
-      run: |
-        npm i
-    - name: deploy
-      run: |
-        zip -r deploy.zip ./*
-        aws lambda update-function-code --function-name=${{env.LAMBDA_NAME}} --zip-file=fileb://deploy.zip 
+      - name: npm install
+        run: |
+          npm i
+      - name: deploy
+        run: |
+          zip -r deploy.zip ./*
+          aws lambda update-function-code --function-name=${{env.LAMBDA_NAME}} --zip-file=fileb://deploy.zip

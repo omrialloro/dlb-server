@@ -16,7 +16,6 @@ const cors = require("cors");
 const helmet = require("helmet");
 const fs = require("fs");
 const AWS = require("aws-sdk");
-const serverlessExpress = require("@vendia/serverless-express");
 
 var spawn = require("child_process").spawn;
 const makePngs = require("./PngUtils.js").makePngs;
@@ -73,9 +72,11 @@ app.use(function (err, req, res, next) {
 
 const serverPort = process.env.PORT || 4000;
 
-app.listen(serverPort, () => {
-  console.log(`API Server listening on port ${serverPort}`);
-});
+if (require.main === module) {
+  app.listen(serverPort, () => {
+    console.log(`API Server running at http://localhost:${serverPort}`);
+  });
+}
 
 // var server = https.createServer(options, app).listen(serverPort, function(){
 //   console.log("Express server listening on port " + serverPort);
@@ -451,7 +452,11 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       ContentType: req.file.mimetype,
     };
 
-    console.log(fileContent);
+    console.log(fileContent.length);
+    console.log(fileContent.length);
+    console.log(fileContent.length);
+    console.log(fileContent.length);
+    console.log(fileContent.length);
 
     const result = await s3.upload(params).promise();
 
@@ -460,6 +465,25 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     console.error("S3 Upload Error:", error);
     res.status(500).json({ error: "Failed to upload file to S3" });
   }
+});
+
+app.get("/ping", checkJwt, (req, res) => {
+  console.log("✅ /ping route hit");
+  res.send("pong");
+});
+
+app.get("/pong", checkJwt, function (req, res) {
+  res.send("ok");
+});
+app.post("/uploadFileNoAuth", upload.single("file"), async (req, res) => {
+  console.log("🔥 /uploadFileNoAuth hit");
+  console.log("req.file:", req.file);
+
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded." });
+  }
+
+  res.json({ filename: req.file.originalname, size: req.file.size });
 });
 
 // const { Readable } = require("stream");
@@ -566,8 +590,6 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
 //     res.status(500).json({ error: "Failed to upload file to S3" });
 //   }
 // });
-
-// exports.handler = serverlessExpress({ app });
 
 exports.handler = serverless(app, {
   binary: ["audio/mpeg", "audio/*"],

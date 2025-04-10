@@ -11,7 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@vendia/serverless-express": "^4.10.1",
     "aws-sdk": "^2.1360.0",
     "bcrypt": "^5.1.0",
     "busboy": "^1.6.0",
