@@ -441,7 +441,8 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const fileContent = req.file.buffer; // This is already binary!
+    // const fileContent = req.file.buffer; // This is already binary!
+    const fileContent = Buffer.from(req.file.buffer, "base64");
 
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
     console.log(fileContent);
