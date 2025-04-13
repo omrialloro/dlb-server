@@ -435,9 +435,31 @@ app.get("/downloadYoutubeMp3", (req, res) => {
 //   }
 // });
 
-const serverless = require("serverless-http");
-module.exports.handler = serverless(app, {
-  binary: ["multipart/form-data", "audio/mpeg", "*/*"],
+app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    const fileContent = req.file.buffer; // This is already binary!
+    const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+
+    const params = {
+      Bucket: "music-for-animatin",
+      Key: fileName,
+      Body: fileContent, // ✅ Directly use buffer here
+      ContentType: req.file.mimetype,
+    };
+
+    console.log(fileContent);
+
+    const result = await s3.upload(params).promise();
+
+    res.json({ fileUrl: result.Location });
+  } catch (error) {
+    console.error("S3 Upload Error:", error);
+    res.status(500).json({ error: "Failed to upload file to S3" });
+  }
 });
 
 // const { Readable } = require("stream");
@@ -547,10 +569,6 @@ module.exports.handler = serverless(app, {
 
 // exports.handler = serverlessExpress({ app });
 
-// exports.handler = serverless(app, {
-//   binary: ["audio/mpeg", "audio/*"],
-// });
-
-module.exports.handler = serverless(app, {
-  binary: ["multipart/form-data", "audio/mpeg", "*/*"],
+exports.handler = serverless(app, {
+  binary: ["audio/mpeg", "audio/*"],
 });
