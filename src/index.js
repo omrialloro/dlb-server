@@ -440,30 +440,18 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
+
     const fileContent = req.file.buffer; // This is already binary!
-    const { base64Data, filename, mimetype } = req.body;
-
-    if (!base64Data || !filename || !mimetype) {
-      return res.status(400).json({ error: "Missing file data." });
-    }
-
-    // Strip the "data:<mimetype>;base64," prefix if present
-    const base64String = base64Data.replace(/^data:[^;]+;base64,/, "");
-
-    // Decode to binary buffer
-    const fileBuffer = Buffer.from(base64String, "base64");
 
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+    console.log(fileContent);
 
     const params = {
       Bucket: "music-for-animatin",
       Key: fileName,
-      Body: fileBuffer, // ✅ Directly use buffer here
+      Body: fileContent, // ✅ Directly use buffer here
       ContentType: req.file.mimetype,
     };
-
-    console.log(fileContent);
-    console.log(fileBuffer);
 
     const result = await s3.upload(params).promise();
 
