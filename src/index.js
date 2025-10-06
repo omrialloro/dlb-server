@@ -32,7 +32,8 @@ AWS.config.update({ region: "eu-central-1" });
 var dynamodb = new AWS.DynamoDB({ apiVersion: "2012-08-10" });
 var documentClient = new AWS.DynamoDB.DocumentClient();
 
-const dynamodbTableName = "animations";
+const dynamodbTableAnimations = "animations";
+const dynamodbTableSessions = "sessions";
 
 const s3 = new AWS.S3();
 
@@ -88,7 +89,7 @@ app.get("/check", checkJwt, function (req, res) {
 
 // async function itemExists(itemId) {
 //   const params = {
-//     TableName: dynamodbTableName,
+//     TableName: dynamodbTableAnimations,
 //     Key: { animationId: { S: itemId } }, // Assuming 'animationId' is a string attribute
 //   };
 
@@ -134,7 +135,7 @@ app.get("/animationsList", checkJwt, function (req, res) {
     ProjectionExpression: "animationId,animationName",
     FilterExpression:
       "isDeleted = :d and saved=:s" + (isRow ? " and formatType=:t" : ""),
-    TableName: dynamodbTableName,
+    TableName: dynamodbTableAnimations,
   };
 
   dynamodb.query(params, function (err, data) {
@@ -200,7 +201,7 @@ app.post("/saveAnimation", checkJwt, async (req, res) => {
   }
 
   var params = {
-    TableName: dynamodbTableName,
+    TableName: dynamodbTableAnimations,
     Item: {
       animationName: { S: name },
       userName: { S: userID },
@@ -242,6 +243,51 @@ app.post("/saveAnimation", checkJwt, async (req, res) => {
     .promise();
   return res.send();
 });
+app.post("/saveSession", checkJwt, async (req, res) => {
+  var data = JSON.stringify(req.body);
+  var data_str = JSON.parse(data);
+  var userID = req.user.email;
+  var isDeleted = data_str["isDeleted"];
+  var name = data_str["name"];
+  var data = JSON.stringify(data_str["data"]);
+  var sessionId = String(Date.now());
+
+  if (!IsSaved) {
+    animationId = name;
+  }
+
+  var params = {
+    TableName: dynamodbTableSessions,
+    Item: {
+      sessionName: { S: name },
+      userName: { S: userID },
+      userID: { S: userID },
+      sessionId: { S: sessionId },
+      isDeleted: { BOOL: isDeleted },
+      date: { S: String(Date.now()) },
+    },
+  };
+  await dynamodb
+    .putItem(params, function (err, data) {
+      if (err) {
+        console.log("Error", err);
+      } else {
+        console.log("Success");
+      }
+    })
+    .promise();
+
+  await s3
+    .putObject({
+      Bucket: "dlb-thumbnails",
+      Key: `sessions/${sessionId}.json`,
+      Body: data,
+      ContentType: "application/json",
+    })
+    .promise();
+
+  return res.send();
+});
 
 app.get("/loadAnimation/:filename", checkJwt, function (req, res) {
   // app.get('/loadAnimation/:filename', function (req, res) {
@@ -265,7 +311,7 @@ app.post("/markAsDeleted", checkJwt, (request, response) => {
 
   const markAsDeleted = async (id) => {
     const params = {
-      TableName: dynamodbTableName,
+      TableName: dynamodbTableAnimations,
       Key: {
         animationId: id,
       },
@@ -287,7 +333,7 @@ app.post("/deleteStoredAnimation", checkJwt, (request, response) => {
     Key: {
       animationId: { S: animationId },
     },
-    TableName: dynamodbTableName,
+    TableName: dynamodbTableAnimations,
   };
   dynamodb.deleteItem(fileItem, function (err, data) {
     if (err) {
@@ -443,6 +489,7 @@ app.post("/uploadFile", checkJwt, upload.single("file"), async (req, res) => {
 
     // const fileContent = req.file.buffer; // This is already binary!
     const fileContent = Buffer.from(req.file.buffer, "base64");
+    console.log(fileContent);
 
     const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
     console.log(fileContent);
